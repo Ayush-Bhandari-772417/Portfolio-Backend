@@ -1,0 +1,10 @@
+# apps/services/admin_paneel.py
+from django.contrib import admin
+from .models import Service
+
+# Register your models here.
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ("title",)
+    search_fields = ("title",)
