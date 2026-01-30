@@ -9,7 +9,7 @@ class ProjectGallerySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectGallery
-        fields = ['id', 'image', 'image_url', 'caption', 'order']
+        fields = "__all__"
 
     def get_image_url(self, obj):
         request = self.context.get("request")

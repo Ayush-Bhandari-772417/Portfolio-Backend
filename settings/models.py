@@ -1,5 +1,6 @@
 # apps/settings/models.py
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 
@@ -18,6 +19,12 @@ class Setting(models.Model):
     value = models.TextField()                                  # Ayush Bhandari    © 2025 Ayush    true            #1e40af
     description = models.TextField(blank=True)
     is_public = models.BooleanField(default=True)
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     def __str__(self):
         return self.key
@@ -41,6 +48,12 @@ class SEOPageSetting(models.Model):
     index = models.BooleanField(default=True)                                   # true      true                false
     follow = models.BooleanField(default=True)                                  # true      true                false
     is_public = models.BooleanField(default=True)
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     def __str__(self):
         return self.page
@@ -74,6 +87,12 @@ class SitemapSetting(models.Model):
     priority = models.FloatField(default=0.5)                                                   # 1.0       0.8             0.3
     changefreq = models.CharField(max_length=20, choices=CHANGEFREQ_CHOICES, default="weekly")  # daily     weekly          monthly
     is_public = models.BooleanField(default=True)
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     def __str__(self):
         return self.page
@@ -102,6 +121,12 @@ class DisplaySetting(models.Model):
     item_type = models.CharField(max_length=50, choices=ITEM_CHOICES)       # projects  skills      projects        projects
     limit = models.PositiveIntegerField(default=6)                          # 6         8           12              9
     is_public = models.BooleanField(default=True)
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     class Meta:
         unique_together = ("context", "item_type")

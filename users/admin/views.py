@@ -1,9 +1,10 @@
 # apps/users/admin/views.py
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
+from config.permissions import IsSecureAdmin
 from ..models import User
 from ..serializers import UserSerializer
 
 class AdminUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]

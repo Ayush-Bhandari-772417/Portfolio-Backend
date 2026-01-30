@@ -1,12 +1,13 @@
 # apps/settings/admin/views.py
-from rest_framework import viewsets, filters, permissions
+from rest_framework import viewsets, filters
+from config.permissions import IsSecureAdmin
 from ..models import Setting, SEOPageSetting, SitemapSetting, DisplaySetting
 from ..serializers import SettingSerializer, SEOPageSettingSerializer, SitemapSettingSerializer, DisplaySettingSerializer
 
 class AdminSettingViewset(viewsets.ModelViewSet):
     serializer_class = SettingSerializer
     queryset = Setting.objects.all().order_by("type")
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["type"]
     ordering_fields = ["type"]
@@ -16,7 +17,7 @@ class AdminSettingViewset(viewsets.ModelViewSet):
 class AdminSEOPageSettingViwset(viewsets.ModelViewSet):
     serializer_class = SEOPageSettingSerializer
     queryset = SEOPageSetting.objects.all().order_by("page")
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["page"]
     ordering_fields = ["page", "index"]
@@ -26,7 +27,7 @@ class AdminSEOPageSettingViwset(viewsets.ModelViewSet):
 class AdminSitemapSettingViewset(viewsets.ModelViewSet):
     serializer_class = SitemapSettingSerializer
     queryset = SitemapSetting.objects.all().order_by("priority")
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["priority"]
     ordering_fields = ["priority"]
@@ -36,7 +37,7 @@ class AdminSitemapSettingViewset(viewsets.ModelViewSet):
 class AdminDisplaySettingViewSet(viewsets.ModelViewSet):
     serializer_class = DisplaySettingSerializer
     queryset = DisplaySetting.objects.all().order_by("context")
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["context"]
     ordering_fields = ["context"]

@@ -1,5 +1,6 @@
 # apps/experience/models.py
 from django.db import models
+from django.conf import settings
 
 class Experience(models.Model):
     title = models.CharField(max_length=255)   # e.g., "Software Team"
@@ -14,6 +15,13 @@ class Experience(models.Model):
 
     responsibilities = models.JSONField(default=list)  # ["Coordinate software activities", "Organize trainings"]
     is_public = models.BooleanField(default=True)
+    
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     class Meta:
         ordering = ["-start_date"]

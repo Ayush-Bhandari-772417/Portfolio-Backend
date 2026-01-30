@@ -1,12 +1,13 @@
 # apps/skills/admin/views.py
 from rest_framework import viewsets, filters, permissions
+from config.permissions import IsSecureAdmin
 from ..models import Skill, SubSkill
 from ..serializers import SkillSerializer, SubSkillSerializer
 
 class AdminSkillViewSet(viewsets.ModelViewSet):
     queryset = Skill.objects.all().order_by("name")
     serializer_class = SkillSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
@@ -16,7 +17,7 @@ class AdminSkillViewSet(viewsets.ModelViewSet):
 class AdminSubSkillViewSet(viewsets.ModelViewSet):
     queryset = SubSkill.objects.all().order_by("name")
     serializer_class = SubSkillSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]

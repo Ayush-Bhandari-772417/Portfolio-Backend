@@ -10,6 +10,12 @@ import uuid
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     is_public = models.BooleanField(default=True)
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     class Meta:
         ordering = ['name']
@@ -64,6 +70,14 @@ class Creation(models.Model):
 
     posted_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+    
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="editor"
+    )
     
     # NEW: Tiptap-based content fields
     content_json = models.JSONField(null=True, blank=True)   # Raw Tiptap JSON (ProseMirror)

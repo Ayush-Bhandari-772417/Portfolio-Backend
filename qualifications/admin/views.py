@@ -1,15 +1,16 @@
 # apps/qualifications/admin/views.py
 from rest_framework.response import Response
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, filters
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django.db import models
+from config.permissions import IsSecureAdmin
 from ..models import Qualification
 from ..serializers import QualificationSerializer
 
 class AdminQualificationViewSet(viewsets.ModelViewSet):
     """Admin API (CRUD, JWT protected) with search + ordering"""
     serializer_class = QualificationSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]
 
     parser_classes = [JSONParser, FormParser, MultiPartParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]

@@ -1,5 +1,6 @@
 # apps/services/admin/models.py
 from django.db import models
+from django.conf import settings
 
 class Service(models.Model):
     title = models.CharField(max_length=100)                        # e.g., "Freelancing", "AI/ML"
@@ -8,6 +9,13 @@ class Service(models.Model):
     is_public = models.BooleanField(default=True)                   # show/hide on public API
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     class Meta:
         ordering = ["title"]

@@ -1,7 +1,7 @@
 # apps/projects/admin/views.py
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from rest_framework.response import Response
+from config.permissions import IsSecureAdmin
 
 from ..models import Project, ProjectGallery
 from ..serializers import ProjectSerializer
@@ -9,7 +9,7 @@ from ..serializers import ProjectSerializer
 
 class AdminProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSecureAdmin]
     parser_classes = [JSONParser, FormParser, MultiPartParser]
 
     def get_queryset(self):

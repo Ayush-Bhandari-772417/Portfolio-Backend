@@ -1,34 +1,87 @@
+# # # apps/auth/token/views.py
+# # from rest_framework_simplejwt.views import TokenObtainPairView
+# # from django.conf import settings
+
+
+# # class CookieTokenObtainPairView(TokenObtainPairView):
+
+# #     def post(self, request, *args, **kwargs):
+# #         response = super().post(request, *args, **kwargs)
+# #         data = response.data
+# #         secure = not settings.DEBUG
+# #         response.set_cookie(
+# #             key="access",
+# #             value=data["access"],
+# #             httponly=True,
+# #             secure=secure,
+# #             samesite="Lax",
+# #             max_age=300,
+# #         )
+# #         response.set_cookie(
+# #             key="refresh",
+# #             value=data["refresh"],
+# #             httponly=True,
+# #             secure=secure,
+# #             samesite="Lax",
+# #             max_age=86400,
+# #         )
+# #         response.data = {"ok": True}
+# #         return response
+
+# # apps/auth/token/views.py
+# from urllib import response
+# from rest_framework_simplejwt.views import TokenObtainPairView
+# from django.conf import settings
+
+
+# class CookieTokenObtainPairView(TokenObtainPairView):
+
+#     def post(self, request, *args, **kwargs):
+#         secure = not settings.DEBUG
+
+#         response.set_cookie(
+#             "access",
+#             data["access"],
+#             httponly=True,
+#             secure=secure,
+#             samesite="None" if secure else "Lax",
+#             max_age=300,
+#         )
+#         response.set_cookie(
+#             "refresh",
+#             data["refresh"],
+#             httponly=True,
+#             secure=secure,
+#             samesite="None" if secure else "Lax",
+#             max_age=86400,
+#         )
+#         return response
+
+
 # apps/auth/token/views.py
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
+from django.conf import settings
 
 class CookieTokenObtainPairView(TokenObtainPairView):
-    """
-    Issues JWT tokens and stores them in HttpOnly cookies
-    """
-
     def post(self, request, *args, **kwargs):
+        # Call parent to authenticate
         response = super().post(request, *args, **kwargs)
+
+        # If authentication failed, return parent response
+        if response.status_code != 200:
+            return response
+
         data = response.data
+        secure = not settings.DEBUG
 
+        # Set cookies
         response.set_cookie(
-            key="access",
-            value=data["access"],
-            httponly=True,
-            secure=True,          # True in production
-            samesite="Strict",
-            max_age=300,          # 5 minutes
+            "access", data["access"], httponly=True, secure=secure, samesite="None" if secure else "Lax", max_age=300
+        )
+        response.set_cookie(
+            "refresh", data["refresh"], httponly=True, secure=secure, samesite="None" if secure else "Lax", max_age=86400
         )
 
-        response.set_cookie(
-            key="refresh",
-            value=data["refresh"],
-            httponly=True,
-            secure=True,          # True in production
-            samesite="Strict",
-            max_age=86400,        # 1 day
-        )
-
-        # Never return tokens in JSON
-        response.data = {"ok": True}
+        response.data = {"ok": True}  # hide tokens in body
         return response

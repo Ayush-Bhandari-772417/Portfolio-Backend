@@ -1,6 +1,7 @@
 # apps/projects/models.py
 from django.db import models
 from users.models import User
+from django.conf import settings
 
 class Project(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects")
@@ -49,6 +50,13 @@ class Project(models.Model):
     featured = models.BooleanField(default=False)
     client_feedback = models.TextField(blank=True, null=True)
 
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
     # Dates
     started_date = models.DateField()
     completed_date = models.DateField(blank=True, null=True)
@@ -77,6 +85,13 @@ class ProjectGallery(models.Model):
     image = models.ImageField(upload_to="projects/gallery/")
     caption = models.CharField(max_length=200, blank=True)
     order = models.PositiveIntegerField(default=0)
+
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     class Meta:
         ordering = ['order', 'id']

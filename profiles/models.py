@@ -1,4 +1,5 @@
 # apps/profiles/models.py
+from django.conf import settings
 from django.db import models
 
 class Profile(models.Model):
@@ -53,6 +54,12 @@ class Profile(models.Model):
 
     keywords = models.JSONField(default=list, blank=True)
     is_public = models.BooleanField(default=True)
+    uploaded_ip = models.GenericIPAddressField(null=True, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
