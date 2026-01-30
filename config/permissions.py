@@ -48,6 +48,7 @@
 
 
 
+# backend/config/permissions.py
 from rest_framework.permissions import BasePermission
 from django.conf import settings
 from .security import is_allowed_admin_ip
