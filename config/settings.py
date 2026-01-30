@@ -372,6 +372,11 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
     "UPDATE_LAST_LOGIN": True,
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    
+    # 🔑 ADD THIS
+    "USERNAME_FIELD": "username",  # or "email" if your User model uses email
 }
 
 # =====================================================
