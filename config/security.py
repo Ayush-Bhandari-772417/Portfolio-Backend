@@ -18,14 +18,3 @@ def is_allowed_admin_ip(request):
     client_ip = get_client_ip(request)
 
     return client_ip in allowed_ips
-
-# def is_allowed_admin_ip(request):
-#     print("ADMIN LOGIN IP:", get_client_ip(request))
-
-#     allowed = os.getenv("ADMIN_ALLOWED_IPS", "")
-
-#     allowed_ips = [ip.strip() for ip in allowed.split(",")]
-
-#     client_ip = get_client_ip(request)
-
-#     return client_ip in allowed_ips

@@ -5,10 +5,10 @@ from projects.public.views import PublicProjectViewSet
 from projects.admin.views import AdminProjectViewSet
 
 public_router = DefaultRouter()
-public_router.register(r'projects', PublicProjectViewSet, basename='public-project')
+public_router.register(r'projects', PublicProjectViewSet, basename='project')
 
 admin_router = DefaultRouter()
-admin_router.register(r'projects', AdminProjectViewSet, basename='admin-project')
+admin_router.register(r'projects', AdminProjectViewSet, basename='project')
 
 urlpatterns = [
     path("public/", include(public_router.urls)),
