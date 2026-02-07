@@ -1,12 +1,14 @@
 # apps/projects/public/views.py
 from rest_framework import viewsets, filters, parsers
 from django.db import models
+from rest_framework.permissions import AllowAny
 from ..models import Project
 from ..serializers import ProjectSerializer
 
 class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
     """Public-facing API (read-only)"""
     queryset = Project.objects.filter(is_public=True).order_by("-started_date")
+    permission_classes = [AllowAny]
     serializer_class = ProjectSerializer
     parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]

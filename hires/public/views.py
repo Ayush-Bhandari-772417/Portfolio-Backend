@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from django.conf import settings
 import requests
+from rest_framework.permissions import AllowAny
 from ..models import HiringMessage
 from ..serializers import HiringMessageSerializer
 
@@ -14,6 +15,7 @@ class PublicHiringMessageViewSet(mixins.CreateModelMixin, viewsets.GenericViewSe
     """Public-facing API: only POST allowed, secure & throttled"""
     serializer_class = HiringMessageSerializer
     throttle_classes = [HiringMessageRateThrottle]
+    permission_classes = [AllowAny]
     queryset = HiringMessage.objects.none()  # never expose messages
 
     def create(self, request, *args, **kwargs):

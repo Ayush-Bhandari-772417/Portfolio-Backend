@@ -2,6 +2,7 @@
 
 from rest_framework import viewsets, filters, parsers
 from django.db import models
+from rest_framework.permissions import AllowAny
 from ..models import Creation, Category
 from ..serializers import CreationSerializer, CategorySerializer
 
@@ -9,11 +10,13 @@ from ..serializers import CreationSerializer, CategorySerializer
 class PublicCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.filter(is_public=True)
     serializer_class = CategorySerializer
+    permission_classes = [AllowAny]
 
 
 class PublicCreationViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Creation.objects.filter(is_public=True)
     serializer_class = CreationSerializer
+    permission_classes = [AllowAny]
     lookup_field = "slug"
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]

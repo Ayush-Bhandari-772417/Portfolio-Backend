@@ -1,12 +1,14 @@
 # apps/qualifications/public/views.py
 from rest_framework import viewsets, filters
 from django.db import models
+from rest_framework.permissions import AllowAny
 from ..models import Qualification
 from ..serializers import QualificationSerializer
 
 class PublicQualificationViewSet(viewsets.ReadOnlyModelViewSet):
     """Public-facing API (read-only, search + ordering enabled)"""
     serializer_class = QualificationSerializer
+    permission_classes = [AllowAny]
 
     # Enable search + filtering for frontend
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]

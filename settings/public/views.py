@@ -1,11 +1,13 @@
 # apps/settings/public/views.py
 from rest_framework import viewsets, filters
+from rest_framework.permissions import AllowAny
 from ..models import Setting, SEOPageSetting, SitemapSetting, DisplaySetting
 from ..serializers import SettingSerializer, SEOPageSettingSerializer, SitemapSettingSerializer, DisplaySettingSerializer
 
 class PublicSettingViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = SettingSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    permission_classes = [AllowAny]
     search_fields = ["type"]
     ordering_fields = ["type"]
     ordering = ["type"]
@@ -16,6 +18,7 @@ class PublicSettingViewset(viewsets.ReadOnlyModelViewSet):
 
 class PublicSEOPageSettingViwset(viewsets.ReadOnlyModelViewSet):
     serializer_class = SEOPageSettingSerializer
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["page"]
     ordering_fields = ["page", "index"]
@@ -27,6 +30,7 @@ class PublicSEOPageSettingViwset(viewsets.ReadOnlyModelViewSet):
 
 class PublicSitemapSettingViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = SitemapSettingSerializer
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["priority"]
     ordering_fields = ["priority"]
@@ -38,6 +42,7 @@ class PublicSitemapSettingViewset(viewsets.ReadOnlyModelViewSet):
 
 class PublicDisplaySettingViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DisplaySettingSerializer
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["context"]
     ordering_fields = ["context"]

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from django.conf import settings
 import requests
+from rest_framework.permissions import AllowAny
 from ..models import Subscription
 from ..serializers import SubscriptionSerializer
 
@@ -15,6 +16,7 @@ class PublicSubscriptionViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet
     serializer_class = SubscriptionSerializer
     throttle_classes = [SubscriptionRateThrottle]
     queryset = Subscription.objects.none()  # never expose subscribers publicly
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         token = request.data.get("token")
