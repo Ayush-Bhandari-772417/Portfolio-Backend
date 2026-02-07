@@ -167,6 +167,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
 }
+DEFAULT_PERMISSION_CLASSES = ["IsAuthenticated"]
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=3),
