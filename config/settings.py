@@ -163,8 +163,11 @@ REST_FRAMEWORK = {
         "config.authentication.CookieJWTAuthentication",  # cookie first
         "rest_framework_simplejwt.authentication.JWTAuthentication",  # fallback
     ],
+    # "DEFAULT_PERMISSION_CLASSES": [
+    #     "rest_framework.permissions.AllowAny",   # 🔥 change
+    # ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",   # 🔥 change
+        "rest_framework.permissions.IsAuthenticated",
     ],
 }
 
