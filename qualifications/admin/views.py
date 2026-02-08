@@ -4,6 +4,7 @@ from rest_framework import viewsets, filters
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django.db import models
 from config.permissions import IsSecureAdmin
+from config.authentication import CookieJWTAuthentication
 from ..models import Qualification
 from ..serializers import QualificationSerializer
 
@@ -11,6 +12,7 @@ class AdminQualificationViewSet(viewsets.ModelViewSet):
     """Admin API (CRUD, JWT protected) with search + ordering"""
     serializer_class = QualificationSerializer
     permission_classes = [IsSecureAdmin]
+    authentication_classes = [CookieJWTAuthentication]
 
     parser_classes = [JSONParser, FormParser, MultiPartParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]

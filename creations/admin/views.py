@@ -15,14 +15,17 @@ from core.utils.revalidate import trigger_revalidation
 from ..models import Creation, Category
 from ..serializers import CreationSerializer, CategorySerializer
 
+from config.authentication import CookieJWTAuthentication
 
 class AdminCategoryViewSet(viewsets.ModelViewSet):
+    authentication_classes = [CookieJWTAuthentication]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsSecureAdmin]
 
 
 class AdminCreationViewSet(viewsets.ModelViewSet):
+    authentication_classes = [CookieJWTAuthentication]
     queryset = Creation.objects.all().select_related("category")
     serializer_class = CreationSerializer
     permission_classes = [IsSecureAdmin]
@@ -72,6 +75,7 @@ class AdminCreationViewSet(viewsets.ModelViewSet):
 
 
 class ImageUploadView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     parser_classes = [MultiPartParser]
     permission_classes = [IsSecureAdmin]
 

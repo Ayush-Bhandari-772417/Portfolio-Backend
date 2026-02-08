@@ -158,16 +158,28 @@ STATICFILES_STORAGE = (
 # =====================================================
 # AUTH / JWT
 # =====================================================
+# REST_FRAMEWORK = {
+#     "DEFAULT_AUTHENTICATION_CLASSES": [
+#         "config.authentication.CookieJWTAuthentication",  # cookie first
+#         "rest_framework_simplejwt.authentication.JWTAuthentication",  # fallback
+#     ],
+#     "DEFAULT_PERMISSION_CLASSES": [
+#         "rest_framework.permissions.IsAuthenticated",
+#     ],
+# }
+# DEFAULT_PERMISSION_CLASSES = ["IsAuthenticated"]
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "config.authentication.CookieJWTAuthentication",  # cookie first
-        "rest_framework_simplejwt.authentication.JWTAuthentication",  # fallback
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
+        "config.authentication.CookieJWTAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
 }
+REST_FRAMEWORK["UNAUTHENTICATED_USER"] = None
 DEFAULT_PERMISSION_CLASSES = ["IsAuthenticated"]
+if not DEBUG:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
+        "rest_framework.renderers.JSONRenderer",
+    ]
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=3),
