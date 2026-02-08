@@ -19,21 +19,14 @@ class CookieTokenObtainPairView(TokenObtainPairView):
 
         data = response.data
         secure = not settings.DEBUG
-
-        response.set_cookie(
-            "access",
-            data["access"],
-            httponly=True,
-            secure=secure,
-            samesite="None" if secure else "Lax",
-            max_age=300,
-        )
+        
         response.set_cookie(
             "refresh",
             data["refresh"],
             httponly=True,
             secure=secure,
-            samesite="None" if secure else "Lax",
+            samesite="Lax" if settings.DEBUG else "None",
+            path="/",       # ✅ add this
             max_age=86400,
         )
 

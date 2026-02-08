@@ -22,10 +22,11 @@ class CookieTokenRefreshView(TokenRefreshView):
         secure = not settings.DEBUG
         response.set_cookie(
             "access",
-            response.data["access"],
+            data["access"],
             httponly=True,
             secure=secure,
-            samesite="None" if secure else "Lax",
+            samesite="Lax" if settings.DEBUG else "None",
+            path="/",       # ✅ add this
             max_age=300,
         )
 
