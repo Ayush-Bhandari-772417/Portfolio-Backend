@@ -15,7 +15,6 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -158,20 +157,12 @@ STATICFILES_STORAGE = (
 # =====================================================
 # AUTH / JWT
 # =====================================================
-# REST_FRAMEWORK = {
-#     "DEFAULT_AUTHENTICATION_CLASSES": [
-#         "config.authentication.CookieJWTAuthentication",  # cookie first
-#         "rest_framework_simplejwt.authentication.JWTAuthentication",  # fallback
-#     ],
-#     "DEFAULT_PERMISSION_CLASSES": [
-#         "rest_framework.permissions.IsAuthenticated",
-#     ],
-# }
-# DEFAULT_PERMISSION_CLASSES = ["IsAuthenticated"]
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "config.authentication.CookieJWTAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
 }
 REST_FRAMEWORK["UNAUTHENTICATED_USER"] = None
@@ -216,8 +207,28 @@ if DEBUG:
     CSRF_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
+    AUTH_COOKIE_SAMESITE = "Lax"
+    AUTH_COOKIE_SECURE = False
+    AUTH_COOKIE_HTTP_ONLY = True
 else:
     SESSION_COOKIE_SAMESITE = "None"
     CSRF_COOKIE_SAMESITE = "None"
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+    AUTH_COOKIE_SAMESITE = "Lax"    # ✅
+    AUTH_COOKIE_SECURE = True
+
+AUTH_COOKIE_HTTP_ONLY = True
+
+
+print("Debug = ",DEBUG)
+print("SESSION_COOKIE_SAMESITE = ",SESSION_COOKIE_SAMESITE)
+print("CSRF_COOKIE_SAMESITE = ",CSRF_COOKIE_SAMESITE)
+print("SESSION_COOKIE_SECURE = ",SESSION_COOKIE_SECURE)
+print("CSRF_COOKIE_SECURE = ",CSRF_COOKIE_SECURE)
+print("CORS_ALLOW_CREDENTIALS = ",CORS_ALLOW_CREDENTIALS)
+print("CORS_ALLOWED_ORIGINS = ",CORS_ALLOWED_ORIGINS)
+print("AUTH_COOKIE_SAMESITE = ",AUTH_COOKIE_SAMESITE)
+print("AUTH_COOKIE_SECURE = ",AUTH_COOKIE_SECURE)
+print("AUTH_COOKIE_HTTP_ONLY = ",AUTH_COOKIE_HTTP_ONLY)

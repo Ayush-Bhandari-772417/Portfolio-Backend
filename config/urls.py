@@ -23,12 +23,12 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # JWT - REMOVE or COMMENT OUT these default views
+    # path('api/admin/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('api/admin/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # JWT
-    path('api/admin/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/admin/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
-    path('api/admin/auth/', include('auth.token.urls')),
+    # Use your custom cookie-based views instead
+    path('api/admin/auth/', include('auth.token.urls')),   # ← this now handles /api/admin/auth/token/ and /refresh/
     path('api/admin/auth/me/', include('auth.me.urls')),
 
     # App APIs (we’ll add routers below)

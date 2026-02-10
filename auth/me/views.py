@@ -2,8 +2,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from config.authentication import CookieJWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 class MeView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+# class MeView(APIView):
     """
     Returns current authenticated user
     """
