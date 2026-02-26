@@ -6,7 +6,7 @@ from socialmedia.public.views import PublicSocialMediaViewSet
 
 public_router = DefaultRouter()
 public_router.register(r'socialmedias', PublicSocialMediaViewSet, basename='socialmedia')
-
+print("SocialMedia router registered for prefix:", "api/admin/socialmedias/")
 admin_router = DefaultRouter()
 admin_router.register(r'socialmedias', AdminSocialMediaViewSet, basename='socialmedia')
 
