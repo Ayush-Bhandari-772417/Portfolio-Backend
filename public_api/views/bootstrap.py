@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from django.db import connection
 
 from public_api.services.bootstrap_service import BootstrapService
 from public_api.serializers.bootstrap import BootstrapSerializer
@@ -16,6 +17,4 @@ class BootstrapView(APIView):
     def get(self, request):
         data = BootstrapService.get_data()
         serializer = BootstrapSerializer(data)
-        from django.db import connection
-        print("Query count:", len(connection.queries))
         return Response(serializer.data)
