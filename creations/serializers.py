@@ -57,16 +57,52 @@ class CreationSerializer(serializers.ModelSerializer):
         return instance
 
     # ---------------- HELPER ----------------
+    # def _trigger_revalidation(self, instance):
+    #     paths = [
+    #         "/",
+    #         "/creations",
+    #         f"/creations/{instance.type}",
+    #         f"/creations/{instance.type}/{instance.slug}",
+    #         f"/creations/{instance.slug}",
+    #     ]
+    #     # ✅ Safely handle category
+    #     if instance.category is not None:
+    #         paths.append(f"/creations/{instance.category.id}")
+    #         paths.append(f"/creations/{instance.category.id}/{instance.slug}")
+    #     trigger_revalidation(paths=paths)
+    
     def _trigger_revalidation(self, instance):
         paths = [
-            "/",
-            "/creations",
-            f"/creations/{instance.type}",
-            f"/creations/{instance.type}/{instance.slug}",
-            f"/creations/{instance.slug}",
+            "/",                                # homepage cards
+            "/creations",                       # main list
+            f"/creations/{instance.type}",      # filtered by type
+            f"/creations/{instance.type}/{instance.slug}",  # detail page
         ]
-        # ✅ Safely handle category
-        if instance.category is not None:
-            paths.append(f"/creations/{instance.category.id}")
-            paths.append(f"/creations/{instance.category.id}/{instance.slug}")
         trigger_revalidation(paths=paths)
+
+
+class CreationListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Creation
+        fields = [
+            "title",
+            "slug",
+            "language",
+            "featured_image",
+            "featured_image_alt",
+            "type",
+            "category",
+            "keywords",
+            "excerpt",
+            "written_date",
+            "updated_date",
+        ]
+
+
+class CreationDetailSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Creation
+        fields = "__all__"

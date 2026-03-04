@@ -51,3 +51,32 @@ class ProjectSerializer(serializers.ModelSerializer):
             f"/projects/{project.slug}",
         ])
         return project
+    
+
+class ProjectListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Project
+        fields = [
+            "title",
+            "slug",
+            "category",
+            "excerpt",
+            "technologies",
+            "keywords",
+            "tags",
+            "featured_image",
+            "featured_image_alt",
+            "status",
+            "project_type",
+            "started_date",
+            "completed_date",
+        ]
+
+
+class ProjectDetailSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Project
+        fields = "__all__"

@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "socialmedia",
     "subscription",
     "users",
+    "public_api",
 ]
 
 AUTH_USER_MODEL = "users.User"

@@ -3,7 +3,7 @@ from rest_framework import viewsets, filters, parsers
 from django.db import models
 from rest_framework.permissions import AllowAny
 from ..models import Project
-from ..serializers import ProjectSerializer
+from ..serializers import ProjectSerializer, ProjectListSerializer, ProjectDetailSerializer
 
 class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
     """Public-facing API (read-only)"""
@@ -26,3 +26,8 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
             "-completed_date",
             "-started_date"
         )
+    
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ProjectListSerializer
+        return ProjectDetailSerializer

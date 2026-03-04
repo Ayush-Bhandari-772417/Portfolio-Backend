@@ -64,12 +64,13 @@ class AdminCreationViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         slug = instance.slug
-        category = instance.category.id if instance.category else None
         response = super().destroy(request, *args, **kwargs)
-        paths = ["/creations"]
-        if category:
-            paths.append(f"/creations/{category}")
-        paths.append(f"/creations/{slug}")
+        paths = [
+            "/",
+            "/creations",
+            f"/creations/{instance.type}",
+            f"/creations/{instance.type}/{slug}",
+        ]
         trigger_revalidation(paths=paths)
         return response
 

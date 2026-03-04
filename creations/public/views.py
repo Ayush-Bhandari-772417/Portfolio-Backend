@@ -4,7 +4,7 @@ from rest_framework import viewsets, filters, parsers
 from django.db import models
 from rest_framework.permissions import AllowAny
 from ..models import Creation, Category
-from ..serializers import CreationSerializer, CategorySerializer
+from ..serializers import CreationSerializer, CategorySerializer, CreationListSerializer, CreationDetailSerializer
 
 
 class PublicCategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -43,3 +43,8 @@ class PublicCreationViewSet(viewsets.ReadOnlyModelViewSet):
             "-published_date",
             "-written_date"
         )
+    
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CreationListSerializer
+        return CreationDetailSerializer
