@@ -23,4 +23,4 @@ class BootstrapSerializer(serializers.Serializer):
     settings = SettingSerializer(many=True)
     seo = SEOPageSettingSerializer(many=True)
     sitemap = SitemapSettingSerializer(many=True)
-    display = DisplaySettingSerializer()
+    display = DisplaySettingSerializer(many=True)
