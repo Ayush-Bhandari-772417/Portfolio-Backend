@@ -8,6 +8,7 @@ from skills.models import Skill, SubSkill
 from experience.models import Experience
 from qualifications.models import Qualification
 from socialmedia.models import SocialMedia
+from creations.models import Category
 from settings.models import Setting, SEOPageSetting, SitemapSetting, DisplaySetting
 
 class BootstrapService:
@@ -42,6 +43,7 @@ class BootstrapService:
                 "-passed_year",
                 "-enrolled_year"
             ),
+            "categories": Category.objects.filter(is_public=True).order_by("name"),
             "social_media": SocialMedia.objects.filter(is_public=True).order_by("name"),
             "settings": Setting.objects.filter(is_public=True).order_by("type"),
             "seo": SEOPageSetting.objects.filter(is_public=True).order_by("page"),

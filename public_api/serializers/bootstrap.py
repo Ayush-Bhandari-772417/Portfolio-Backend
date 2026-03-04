@@ -11,6 +11,7 @@ from settings.serializers import (
     SitemapSettingSerializer,
     DisplaySettingSerializer
 )
+from creations.serializers import CategorySerializer
 from rest_framework import serializers
 
 class BootstrapSerializer(serializers.Serializer):
@@ -24,3 +25,4 @@ class BootstrapSerializer(serializers.Serializer):
     seo = SEOPageSettingSerializer(many=True)
     sitemap = SitemapSettingSerializer(many=True)
     display = DisplaySettingSerializer(many=True)
+    categories = CategorySerializer(many=True)
