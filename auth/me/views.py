@@ -6,13 +6,12 @@ from config.authentication import CookieJWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 class MeView(APIView):
-    authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-# class MeView(APIView):
     """
     Returns current authenticated user
     """
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user = request.user
         if not user or not user.is_authenticated:
