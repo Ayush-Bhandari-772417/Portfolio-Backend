@@ -1,7 +1,6 @@
 # apps/qualifications/serializers.py
 from rest_framework import serializers
 from .models import Qualification
-from core.utils.revalidate import trigger_revalidation
 
 class QualificationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,15 +8,7 @@ class QualificationSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
-        qualification = super().create(validated_data)
-        trigger_revalidation(paths=[
-            "/",
-        ])
-        return qualification
+        return super().create(validated_data)
     
     def update(self, instance, validated_data):
-        qualification = super().update(instance, validated_data)
-        trigger_revalidation(paths=[
-            "/",
-        ])
-        return qualification
+        return super().update(instance, validated_data)

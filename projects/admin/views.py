@@ -4,7 +4,6 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from config.authentication import CookieJWTAuthentication
 from config.permissions import IsSecureAdmin
 from django.shortcuts import get_object_or_404
-from core.utils.revalidate import trigger_revalidation
 
 from ..models import Project, ProjectGallery
 from ..serializers import ProjectSerializer

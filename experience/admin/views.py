@@ -47,7 +47,7 @@ class AdminExperienceViewSet(viewsets.ModelViewSet):
 
 
 
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 # Import models from other apps
 from projects.models import Project
@@ -62,12 +62,12 @@ from socialmedia.models import SocialMedia
 
 @api_view(['GET'])
 @permission_classes([IsSecureAdmin])
+@authentication_classes([CookieJWTAuthentication])
 def dashboard_stats(request):
     """
     Return summary counts for the admin dashboard.
     Protected by JWT and accessible only to admin users.
     """
-    authentication_classes = [CookieJWTAuthentication]
     data = {
         "contacts": ContactMessage.objects.count(),
         "creations": Creation.objects.count(),

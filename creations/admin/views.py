@@ -10,7 +10,6 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from config.permissions import IsSecureAdmin
 from django.shortcuts import get_object_or_404
-from core.utils.revalidate import trigger_revalidation
 
 from ..models import Creation, Category
 from ..serializers import CreationSerializer, CategorySerializer
@@ -62,17 +61,7 @@ class AdminCreationViewSet(viewsets.ModelViewSet):
         )
     
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        slug = instance.slug
-        response = super().destroy(request, *args, **kwargs)
-        paths = [
-            "/",
-            "/creations",
-            f"/creations/{instance.type}",
-            f"/creations/{instance.type}/{slug}",
-        ]
-        trigger_revalidation(paths=paths)
-        return response
+        return super().destroy(request, *args, **kwargs)
 
 
 class ImageUploadView(APIView):

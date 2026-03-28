@@ -1,4 +1,4 @@
-# backend/auth/token/urls.py
+# apps/auth/token/urls.py
 from django.urls import path
 from .refresh import CookieTokenRefreshView
 from .views import CookieTokenObtainPairView

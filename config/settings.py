@@ -15,36 +15,31 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
+from corsheaders.defaults import default_headers
+
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 # =====================================================
 # SECURITY
 # =====================================================
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = [
-    "authorization",
-    "content-type",
-    "x-csrftoken",
-    "x-requested-with",
-]
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
+
+# Production HTTPS support (Render proxy)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
 
 # =====================================================
-# APPLICATION
+# APPLICATIONS
 # =====================================================
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -52,13 +47,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Third party
     "rest_framework",
     "corsheaders",
     "storages",
-
-    # Custom
+    # Project apps
     "contacts",
     "creations",
     "experience",
@@ -76,11 +69,17 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = "users.User"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# =====================================================
+# MIDDLEWARE
+# =====================================================
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "corsheaders.middleware.CorsMiddleware",  # MUST be high
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -89,27 +88,32 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-
 ROOT_URLCONF = "config.urls"
+
+
+# =====================================================
+# TEMPLATES
+# =====================================================
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
-    },
+    }
 ]
 
+
 # =====================================================
-# DATABASE (SUPABASE)
+# DATABASE (Supabase PostgreSQL)
 # =====================================================
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -118,106 +122,104 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": int(os.getenv("DB_PORT", "5432")),
-        "OPTIONS": {
-            "sslmode": "require",
-            "target_session_attrs": "read-write",
-        },
+        "OPTIONS": {"sslmode": "require"},
     }
 }
-
-# =====================================================
-# MEDIA (SUPABASE STORAGE via S3)
-# =====================================================
-
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
-AWS_ACCESS_KEY_ID = os.getenv("SUPABASE_ACCESS_KEY")
-AWS_SECRET_ACCESS_KEY = os.getenv("SUPABASE_SECRET_KEY")
-
-AWS_STORAGE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET")
-AWS_S3_ENDPOINT_URL = os.getenv("SUPABASE_ENDPOINT")
-
-AWS_S3_REGION_NAME = "us-east-1"
-AWS_S3_ADDRESSING_STYLE = "path"
-
-AWS_QUERYSTRING_AUTH = False
-AWS_DEFAULT_ACL = None
-
-MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
 
 
 # =====================================================
 # STATIC FILES
 # =====================================================
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
+
+STORAGES = {
+    "default": {
+        "BACKEND": "core.storage.SupabaseStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 
 # =====================================================
-# AUTH / JWT
+# SUPABASE STORAGE (S3 API)
 # =====================================================
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+
+AWS_S3_ENDPOINT_URL = f"{SUPABASE_URL}/storage/v1/s3"
+AWS_STORAGE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET", "media")
+AWS_ACCESS_KEY_ID = os.getenv("SUPABASE_S3_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = os.getenv("SUPABASE_S3_SECRET_KEY")
+
+AWS_S3_REGION_NAME = "us-east-1"
+AWS_S3_SIGNATURE_VERSION = "s3v4"
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False
+AWS_S3_ADDRESSING_STYLE = "path"
+
+
+# =====================================================
+# CORS (Next.js frontend)
+# =====================================================
+
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "authorization",
+]
+
+
+# =====================================================
+# DJANGO REST FRAMEWORK
+# =====================================================
+
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "config.authentication.CookieJWTAuthentication",
-    ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
-}
-REST_FRAMEWORK["UNAUTHENTICATED_USER"] = None
-DEFAULT_PERMISSION_CLASSES = ["IsAuthenticated"]
-if not DEBUG:
-    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
-        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.permissions.AllowAny",
     ]
+}
+
+
+# =====================================================
+# JWT
+# =====================================================
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=3),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(hours=12),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "UPDATE_LAST_LOGIN": True,
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
-    
-    # 🔑 ADD THIS
-    "USERNAME_FIELD": "username",  # or "email" if your User model uses email
 }
 
+
 # =====================================================
-# TIME ZONE — ABSOLUTE RULE
+# AUTH COOKIES
 # =====================================================
+
+AUTH_COOKIE_ACCESS = "access_token"
+AUTH_COOKIE_REFRESH = "refresh_token"
+AUTH_COOKIE_HTTP_ONLY = True
+AUTH_COOKIE_SAMESITE = "Lax"
+AUTH_COOKIE_SECURE = not DEBUG
+
+
+# =====================================================
+# NEXT.JS REVALIDATION
+# =====================================================
+
+FRONTEND_REVALIDATE_URL = os.getenv(
+    "FRONTEND_REVALIDATE_URL",
+    "http://127.0.0.1:3000/api/revalidate",
+)
+
+
+# =====================================================
+# TIME
+# =====================================================
+
 TIME_ZONE = "UTC"
 USE_TZ = True
-
-# =====================================================
-# MISC
-# =====================================================
-REVALIDATE_SECRET = os.getenv("REVALIDATE_SECRET")
-FRONTEND_REVALIDATE_URL = os.getenv("FRONTEND_REVALIDATE_URL")
-RECAPTCHA_SECRET_KEY = os.getenv("RECAPTCHA_SECRET_KEY")
-# settings.py
-
-CORS_ALLOW_CREDENTIALS = True
-
-if DEBUG:
-    SESSION_COOKIE_SAMESITE = "Lax"
-    CSRF_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    AUTH_COOKIE_SAMESITE = "Lax"
-    AUTH_COOKIE_SECURE = False
-    AUTH_COOKIE_HTTP_ONLY = True
-else:
-    SESSION_COOKIE_SAMESITE = "None"
-    CSRF_COOKIE_SAMESITE = "None"
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
-    AUTH_COOKIE_SAMESITE = "Lax"    # ✅
-    AUTH_COOKIE_SECURE = True
-
-AUTH_COOKIE_HTTP_ONLY = True

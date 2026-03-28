@@ -1,7 +1,6 @@
 # apps/profiles/serializers.py
 from rest_framework import serializers
 from .models import Profile
-from core.utils.revalidate import trigger_revalidation
 
 # Main Project Serializer
 class ProfileSerializer(serializers.ModelSerializer):
@@ -51,14 +50,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         return None
 
     def create(self, validated_data):
-        profile = super().create(validated_data)
-        trigger_revalidation(paths=[ "/", ])
-        return profile
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        profile = super().update(instance, validated_data)
-        trigger_revalidation(paths=[ "/", ])
-        return profile
+        return super().update(instance, validated_data)
 
     def validate(self, data):
         if Profile.objects.exists() and not self.instance:

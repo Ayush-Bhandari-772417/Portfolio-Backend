@@ -1,7 +1,7 @@
 # apps/creations/serializers.py
 from rest_framework import serializers
 from .models import Creation, Category
-from core.utils.revalidate import trigger_revalidation
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,18 +9,10 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        category = super().create(validated_data)
-        trigger_revalidation(paths=[
-            "/categories",
-        ])
-        return category
+        return super().create(validated_data)
     
     def update(self, instance, validated_data):
-        category = super().update(instance, validated_data)
-        trigger_revalidation(paths=[
-            "/categories",
-        ])
-        return category
+        return super().update(instance, validated_data)
 
 
 class CreationSerializer(serializers.ModelSerializer):
@@ -46,40 +38,12 @@ class CreationSerializer(serializers.ModelSerializer):
     # ---------------- CREATE ----------------
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
-        instance = super().create(validated_data)
-        self._trigger_revalidation(instance)
-        return instance
+        return super().create(validated_data)
 
     # ---------------- UPDATE ----------------
     def update(self, instance, validated_data):
-        instance = super().update(instance, validated_data)
-        self._trigger_revalidation(instance)
-        return instance
-
-    # ---------------- HELPER ----------------
-    # def _trigger_revalidation(self, instance):
-    #     paths = [
-    #         "/",
-    #         "/creations",
-    #         f"/creations/{instance.type}",
-    #         f"/creations/{instance.type}/{instance.slug}",
-    #         f"/creations/{instance.slug}",
-    #     ]
-    #     # ✅ Safely handle category
-    #     if instance.category is not None:
-    #         paths.append(f"/creations/{instance.category.id}")
-    #         paths.append(f"/creations/{instance.category.id}/{instance.slug}")
-    #     trigger_revalidation(paths=paths)
-    
-    def _trigger_revalidation(self, instance):
-        paths = [
-            "/",                                # homepage cards
-            "/creations",                       # main list
-            f"/creations/{instance.type}",      # filtered by type
-            f"/creations/{instance.type}/{instance.slug}",  # detail page
-        ]
-        trigger_revalidation(paths=paths)
-
+        return super().update(instance, validated_data)
+        
 
 class CreationListSerializer(serializers.ModelSerializer):
 

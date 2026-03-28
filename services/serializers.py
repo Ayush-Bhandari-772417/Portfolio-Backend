@@ -1,7 +1,6 @@
 # apps/services/serializers.py
 from rest_framework import serializers
 from .models import Service
-from core.utils.revalidate import trigger_revalidation
 
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,15 +8,7 @@ class ServiceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
-        service = super().create(validated_data)
-        trigger_revalidation(paths=[
-            "/",
-        ])
-        return service
+        return super().create(validated_data)
     
     def update(self, instance, validated_data):
-        service = super().update(instance, validated_data)
-        trigger_revalidation(paths=[
-            "/",
-        ])
-        return service
+        return super().update(instance, validated_data)

@@ -14,5 +14,4 @@ class AdminSocialMediaViewSet(viewsets.ModelViewSet):
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
     ordering = ["name"]
-    print("SocialMedia view for prefix:", "api/admin/socialmedias/")
 

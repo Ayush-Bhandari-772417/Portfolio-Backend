@@ -1,7 +1,6 @@
 # apps/skills/serializers.py
 from rest_framework import serializers
 from .models import Skill, SubSkill
-from core.utils.revalidate import trigger_revalidation
 
 # ----------------------------
 # SubSkill Serializer
@@ -38,7 +37,6 @@ class SkillSerializer(serializers.ModelSerializer):
         for subskill_data in subskills_data:
             SubSkill.objects.create(skill=skill, **subskill_data)
 
-        trigger_revalidation(paths=["/"])
         return skill
 
     # ----------------------------
@@ -58,5 +56,4 @@ class SkillSerializer(serializers.ModelSerializer):
             for subskill_data in subskills_data:
                 SubSkill.objects.create(skill=instance, **subskill_data)
 
-        trigger_revalidation(paths=["/"])
         return instance
