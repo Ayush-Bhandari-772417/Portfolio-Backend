@@ -7,5 +7,4 @@ class CreationConfig(AppConfig):
     
     def ready(self):
         import creations.admin_panel  # ✅ ensures admin models get registered
-        import creations.signals  # ✅ ensures signal handlers get registered
         
