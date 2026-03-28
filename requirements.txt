@@ -9,3 +9,4 @@ gunicorn
 whitenoise
 django-storages[boto3]
 boto3
+requests
