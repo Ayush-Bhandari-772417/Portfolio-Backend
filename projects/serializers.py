@@ -63,6 +63,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    gallery_images = ProjectGallerySerializer(many=True, read_only=True)  # This is the fix
 
     class Meta:
         model = Project
