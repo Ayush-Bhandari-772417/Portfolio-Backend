@@ -50,6 +50,7 @@ class CreationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Creation
         fields = [
+            "id",
             "title",
             "slug",
             "language",
