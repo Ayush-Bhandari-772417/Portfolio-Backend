@@ -1,13 +1,12 @@
 # apps/settings/public/views.py
-from rest_framework import viewsets, filters
-from rest_framework.permissions import AllowAny
+from rest_framework import filters
+from config.public.base import PublicBaseReadOnlyViewSet
 from ..models import Setting, SEOPageSetting, SitemapSetting, DisplaySetting
 from ..serializers import SettingSerializer, SEOPageSettingSerializer, SitemapSettingSerializer, DisplaySettingSerializer
 
-class PublicSettingViewset(viewsets.ReadOnlyModelViewSet):
+class PublicSettingViewset(PublicBaseReadOnlyViewSet):
     serializer_class = SettingSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    permission_classes = [AllowAny]
     search_fields = ["type"]
     ordering_fields = ["type"]
     ordering = ["type"]
@@ -16,9 +15,8 @@ class PublicSettingViewset(viewsets.ReadOnlyModelViewSet):
         return Setting.objects.filter(is_public=True).order_by("type")
     
 
-class PublicSEOPageSettingViwset(viewsets.ReadOnlyModelViewSet):
+class PublicSEOPageSettingViwset(PublicBaseReadOnlyViewSet):
     serializer_class = SEOPageSettingSerializer
-    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["page"]
     ordering_fields = ["page", "index"]
@@ -28,9 +26,8 @@ class PublicSEOPageSettingViwset(viewsets.ReadOnlyModelViewSet):
         return SEOPageSetting.objects.filter(is_public=True).order_by("page")
     
 
-class PublicSitemapSettingViewset(viewsets.ReadOnlyModelViewSet):
+class PublicSitemapSettingViewset(PublicBaseReadOnlyViewSet):
     serializer_class = SitemapSettingSerializer
-    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["priority"]
     ordering_fields = ["priority"]
@@ -40,9 +37,8 @@ class PublicSitemapSettingViewset(viewsets.ReadOnlyModelViewSet):
         return SitemapSetting.objects.filter(is_public=True).order_by("priority")
     
 
-class PublicDisplaySettingViewSet(viewsets.ReadOnlyModelViewSet):
+class PublicDisplaySettingViewSet(PublicBaseReadOnlyViewSet):
     serializer_class = DisplaySettingSerializer
-    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["context"]
     ordering_fields = ["context"]

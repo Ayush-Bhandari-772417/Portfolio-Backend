@@ -1,12 +1,13 @@
 # apps/skills/serializers.py
 from rest_framework import serializers
+from config.serializers.base import BaseModelSerializer
 from .models import Skill, SubSkill
 
 # ----------------------------
 # SubSkill Serializer
 # ----------------------------
 
-class SubSkillSerializer(serializers.ModelSerializer):
+class SubSkillSerializer(BaseModelSerializer):
 
     class Meta:
         model = SubSkill
@@ -18,7 +19,7 @@ class SubSkillSerializer(serializers.ModelSerializer):
 # Skill Serializer
 # ----------------------------
 
-class SkillSerializer(serializers.ModelSerializer):
+class SkillSerializer(BaseModelSerializer):
     subskills = SubSkillSerializer(many=True)
 
     class Meta:

@@ -1,15 +1,14 @@
 # apps/experience/public/views.py
-from rest_framework import viewsets, filters
+from rest_framework import filters
 from django.db import models
-from rest_framework.permissions import AllowAny
+from config.public.base import PublicBaseReadOnlyViewSet
 from ..models import Experience
 from ..serializers import ExperienceSerializer
 
-class PublicExperienceViewSet(viewsets.ReadOnlyModelViewSet):
+class PublicExperienceViewSet(PublicBaseReadOnlyViewSet):
     """Public-facing API (read-only, search + ordering enabled)"""
 
     serializer_class = ExperienceSerializer
-    permission_classes = [AllowAny]
 
     # Search + filtering
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]

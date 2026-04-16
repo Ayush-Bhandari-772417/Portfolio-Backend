@@ -1,10 +1,10 @@
 # apps/contacts/public/views.py
-from rest_framework import viewsets, status, mixins
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 import requests
 from django.conf import settings
-from rest_framework.permissions import AllowAny
+from config.public.base import PublicBaseCreateViewSet
 
 from ..models import ContactMessage
 from ..serializers import ContactMessageSerializer
@@ -12,14 +12,12 @@ from ..serializers import ContactMessageSerializer
 
 class ContactMessageRateThrottle(AnonRateThrottle):
     rate = "3/min"  # only 3 messages per minute per IP
-    permission_classes = [AllowAny]
 
 
-class PublicContactMessageViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+class PublicContactMessageViewSet(PublicBaseCreateViewSet):
     """Public contact form (POST only, secure, throttled, reCAPTCHA protected)"""
     serializer_class = ContactMessageSerializer
     throttle_classes = [ContactMessageRateThrottle]
-    permission_classes = [AllowAny]
     queryset = ContactMessage.objects.none()  # 🚫 never expose messages publicly
 
     def create(self, request, *args, **kwargs):

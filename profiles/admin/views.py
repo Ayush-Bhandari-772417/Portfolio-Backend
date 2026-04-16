@@ -1,16 +1,12 @@
 # apps/profiles/admin/views.py
-from rest_framework import viewsets
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from config.authentication import CookieJWTAuthentication
-from config.permissions import IsSecureAdmin
+from config.admin.base import AdminBaseViewSet
 from ..models import Profile
 from ..serializers import ProfileSerializer
 
-class AdminProfileViewSet(viewsets.ModelViewSet):
+class AdminProfileViewSet(AdminBaseViewSet):
     serializer_class = ProfileSerializer
-    permission_classes = [IsSecureAdmin]
     parser_classes = [JSONParser, FormParser, MultiPartParser]
-    authentication_classes = [CookieJWTAuthentication]
 
     def get_queryset(self):
         return Profile.objects.all()

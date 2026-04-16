@@ -1,9 +1,10 @@
 # apps/projects/serializers.py
 from rest_framework import serializers
+from config.serializers.base import BaseModelSerializer
 from .models import Project, ProjectGallery
 
 # Serializer for gallery images
-class ProjectGallerySerializer(serializers.ModelSerializer):
+class ProjectGallerySerializer(BaseModelSerializer):
     image_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -11,16 +12,13 @@ class ProjectGallerySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_image_url(self, obj):
-        request = self.context.get("request")
-        if obj.image and hasattr(obj.image, "url"):
-            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
-        return None
+        return self.get_image_url(obj, 'image')
 
 
 # Main Project Serializer
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(BaseModelSerializer):
     featured_image_url = serializers.SerializerMethodField()
-    gallery_images = ProjectGallerySerializer(many=True, read_only=True)  # This is the fix
+    gallery_images = ProjectGallerySerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
@@ -28,16 +26,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ("user",)
 
     def get_featured_image_url(self, obj):
-        request = self.context.get("request")
-        if obj.featured_image and hasattr(obj.featured_image, "url"):
-            return request.build_absolute_uri(obj.featured_image.url) if request else obj.featured_image.url
-        return None
-
-    def create(self, validated_data):
-        return super().create(validated_data)
-    
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        return self.get_image_url(obj, 'featured_image')
     
 
 class ProjectListSerializer(serializers.ModelSerializer):

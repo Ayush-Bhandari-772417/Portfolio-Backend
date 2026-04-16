@@ -1,16 +1,16 @@
 # apps/hires/admin/views.py
-from rest_framework import viewsets, filters
-from config.authentication import CookieJWTAuthentication
-from config.permissions import IsSecureAdmin
+from rest_framework import filters
+from config.admin.base import AdminBaseViewSet
 from ..models import HiringMessage
 from ..serializers import HiringMessageSerializer
 
-class AdminHiringMessageViewSet(viewsets.ModelViewSet):
+class AdminHiringMessageViewSet(AdminBaseViewSet):
     """Admin API (CRUD, JWT protected)"""
-    queryset = HiringMessage.objects.all().order_by("-posted_at")
     serializer_class = HiringMessageSerializer
-    permission_classes = [IsSecureAdmin]
-    authentication_classes = [CookieJWTAuthentication]
+
+    def get_queryset(self):
+        qs = HiringMessage.objects.all().order_by("-posted_at")
+        return qs
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "email", "phone", "details", "ip_address", "user_agent"]

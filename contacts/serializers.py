@@ -1,8 +1,8 @@
 # apps/contacts/serializers.py
-from rest_framework import serializers
 from .models import ContactMessage
+from config.serializers.base import BaseModelSerializer
 
-class ContactMessageSerializer(serializers.ModelSerializer):
+class ContactMessageSerializer(BaseModelSerializer):
     class Meta:
         model = ContactMessage
         fields = "__all__"

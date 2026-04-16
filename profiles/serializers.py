@@ -1,9 +1,10 @@
 # apps/profiles/serializers.py
 from rest_framework import serializers
+from config.serializers.base import BaseModelSerializer
 from .models import Profile
 
 # Main Project Serializer
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(BaseModelSerializer):
     profile_image_url = serializers.SerializerMethodField()
     about_image_url = serializers.SerializerMethodField()
     resume_url = serializers.SerializerMethodField()
@@ -20,40 +21,19 @@ class ProfileSerializer(serializers.ModelSerializer):
         return value
 
     def get_resume_url(self, obj):
-        request = self.context.get("request")
-        if obj.resume and hasattr(obj.resume, "url"):
-            return request.build_absolute_uri(obj.resume.url) if request else obj.resume.url
-        return None
+        return self.get_image_url(obj, 'resume')
 
     def get_profile_image_url(self, obj):
-        request = self.context.get("request")
-        if obj.profile_image and hasattr(obj.profile_image, "url"):
-            return request.build_absolute_uri(obj.profile_image.url) if request else obj.profile_image.url
-        return None
+        return self.get_image_url(obj, 'profile_image')
 
     def get_about_image_url(self, obj):
-        request = self.context.get("request")
-        if obj.about_image and hasattr(obj.about_image, "url"):
-            return request.build_absolute_uri(obj.about_image.url) if request else obj.about_image.url
-        return None
+        return self.get_image_url(obj, 'about_image')
 
     def get_logo_url(self, obj):
-        request = self.context.get("request")
-        if obj.logo and hasattr(obj.logo, "url"):
-            return request.build_absolute_uri(obj.logo.url) if request else obj.logo.url
-        return None
+        return self.get_image_url(obj, 'logo')
 
     def get_named_logo_url(self, obj):
-        request = self.context.get("request")
-        if obj.named_logo and hasattr(obj.named_logo, "url"):
-            return request.build_absolute_uri(obj.named_logo.url) if request else obj.named_logo.url
-        return None
-
-    def create(self, validated_data):
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        return self.get_image_url(obj, 'named_logo')
 
     def validate(self, data):
         if Profile.objects.exists() and not self.instance:

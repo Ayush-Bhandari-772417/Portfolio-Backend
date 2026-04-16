@@ -1,21 +1,16 @@
 # apps/creations/serializers.py
 from rest_framework import serializers
+from config.serializers.base import BaseModelSerializer
 from .models import Creation, Category
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(BaseModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
 
-    def create(self, validated_data):
-        return super().create(validated_data)
-    
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
 
-
-class CreationSerializer(serializers.ModelSerializer):
+class CreationSerializer(BaseModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     category = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
@@ -30,19 +25,12 @@ class CreationSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'user', 'posted_date']
 
     def get_featured_image_url(self, obj):
-        request = self.context.get("request")
-        if obj.featured_image:
-            return request.build_absolute_uri(obj.featured_image.url)
-        return None
+        return self.get_image_url(obj, 'featured_image')
 
     # ---------------- CREATE ----------------
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
         return super().create(validated_data)
-
-    # ---------------- UPDATE ----------------
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
         
 
 class CreationListSerializer(serializers.ModelSerializer):

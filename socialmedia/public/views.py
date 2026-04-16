@@ -1,13 +1,12 @@
 # apps/socialmedia/public/views.py
-from rest_framework import viewsets, filters
-from rest_framework.permissions import AllowAny
+from rest_framework import filters
+from config.public.base import PublicBaseReadOnlyViewSet
 from ..models import SocialMedia
 from ..serializers import SocialMediaSerializer
 
-class PublicSocialMediaViewSet(viewsets.ReadOnlyModelViewSet):
+class PublicSocialMediaViewSet(PublicBaseReadOnlyViewSet):
     serializer_class = SocialMediaSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    permission_classes = [AllowAny]
     search_fields = ["name"]
     ordering_fields = ["name"]
     ordering = ["name"]

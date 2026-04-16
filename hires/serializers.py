@@ -1,8 +1,8 @@
 # apps/hires/serializers.py
-from rest_framework import serializers
 from .models import HiringMessage
+from config.serializers.base import BaseModelSerializer
 
-class HiringMessageSerializer(serializers.ModelSerializer):
+class HiringMessageSerializer(BaseModelSerializer):
     class Meta:
         model = HiringMessage
         fields = "__all__"

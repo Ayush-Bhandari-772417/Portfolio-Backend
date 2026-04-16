@@ -1,17 +1,18 @@
 # apps/skills/admin/views.py
-from rest_framework import viewsets, filters
-from config.permissions import IsSecureAdmin
-from config.authentication import CookieJWTAuthentication
+from rest_framework import filters
+from config.admin.base import AdminBaseViewSet
 from ..models import Skill, SubSkill
 from ..serializers import SkillSerializer, SubSkillSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
-class AdminSkillViewSet(viewsets.ModelViewSet):
-    queryset = Skill.objects.all().order_by("name")
+class AdminSkillViewSet(AdminBaseViewSet):
     serializer_class = SkillSerializer
-    permission_classes = [IsSecureAdmin]
-    authentication_classes = [CookieJWTAuthentication]
+
+    def get_queryset(self):
+        qs = Skill.objects.all().order_by("name")
+        return qs
+
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
@@ -25,11 +26,13 @@ class AdminSkillViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class AdminSubSkillViewSet(viewsets.ModelViewSet):
-    queryset = SubSkill.objects.all().order_by("name")
+class AdminSubSkillViewSet(AdminBaseViewSet):
     serializer_class = SubSkillSerializer
-    permission_classes = [IsSecureAdmin]
-    authentication_classes = [CookieJWTAuthentication]
+
+    def get_queryset(self):
+        qs = SubSkill.objects.all().order_by("name")
+        return qs
+
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]

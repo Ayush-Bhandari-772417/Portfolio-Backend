@@ -1,17 +1,14 @@
 # apps/experience/admin/views.py
-from rest_framework import viewsets, filters, parsers
-from config.authentication import CookieJWTAuthentication
-from config.permissions import IsSecureAdmin
+from rest_framework import filters, parsers
+from config.admin.base import AdminBaseViewSet
 from django.db import models
 from ..models import Experience
 from ..serializers import ExperienceSerializer
 
-class AdminExperienceViewSet(viewsets.ModelViewSet):
+class AdminExperienceViewSet(AdminBaseViewSet):
     """Admin API (CRUD, JWT protected) with search + ordering"""
 
     serializer_class = ExperienceSerializer
-    permission_classes = [IsSecureAdmin]    
-    authentication_classes = [CookieJWTAuthentication]
 
     # Consistent with Qualification admin
     parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
@@ -61,8 +58,6 @@ from qualifications.models import Qualification
 from socialmedia.models import SocialMedia
 
 @api_view(['GET'])
-@permission_classes([IsSecureAdmin])
-@authentication_classes([CookieJWTAuthentication])
 def dashboard_stats(request):
     """
     Return summary counts for the admin dashboard.

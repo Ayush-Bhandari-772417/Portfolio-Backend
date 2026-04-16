@@ -4,30 +4,24 @@ from django.core.files.storage import default_storage
 from django.conf import settings
 import uuid
 from django.db import models
-from rest_framework import viewsets, filters, parsers
+from rest_framework import filters, parsers, viewsets
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from config.permissions import IsSecureAdmin
+from config.admin.base import AdminBaseViewSet
 from django.shortcuts import get_object_or_404
 
 from ..models import Creation, Category
 from ..serializers import CreationSerializer, CategorySerializer
 
-from config.authentication import CookieJWTAuthentication
-
-class AdminCategoryViewSet(viewsets.ModelViewSet):
-    authentication_classes = [CookieJWTAuthentication]
+class AdminCategoryViewSet(AdminBaseViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsSecureAdmin]
 
 
-class AdminCreationViewSet(viewsets.ModelViewSet):
-    authentication_classes = [CookieJWTAuthentication]
+class AdminCreationViewSet(AdminBaseViewSet):
     queryset = Creation.objects.all().select_related("category")
     serializer_class = CreationSerializer
-    permission_classes = [IsSecureAdmin]
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
@@ -65,9 +59,7 @@ class AdminCreationViewSet(viewsets.ModelViewSet):
 
 
 class ImageUploadView(APIView):
-    authentication_classes = [CookieJWTAuthentication]
     parser_classes = [MultiPartParser]
-    permission_classes = [IsSecureAdmin]
 
     def post(self, request):
         file = request.FILES.get("image")

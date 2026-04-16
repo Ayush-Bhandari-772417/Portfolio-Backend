@@ -1,16 +1,16 @@
 # apps/subscription/admin/views.py
-from rest_framework import viewsets, filters
-from config.permissions import IsSecureAdmin
-from config.authentication import CookieJWTAuthentication
+from rest_framework import filters
+from config.admin.base import AdminBaseViewSet
 from ..models import Subscription
 from ..serializers import SubscriptionSerializer
 
-class AdminSubscriptionViewSet(viewsets.ModelViewSet):
+class AdminSubscriptionViewSet(AdminBaseViewSet):
     """Admin API (CRUD, JWT protected)"""
-    queryset = Subscription.objects.all().order_by("-subscribed_at")
     serializer_class = SubscriptionSerializer
-    permission_classes = [IsSecureAdmin]
-    authentication_classes = [CookieJWTAuthentication]
+
+    def get_queryset(self):
+        qs = Subscription.objects.all().order_by("-subscribed_at")
+        return qs
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["email", "ip_address", "user_agent"]

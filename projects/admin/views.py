@@ -1,19 +1,15 @@
 # apps/projects/admin/views.py
-from rest_framework import viewsets
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from config.authentication import CookieJWTAuthentication
-from config.permissions import IsSecureAdmin
+from config.admin.base import AdminBaseViewSet
 from django.shortcuts import get_object_or_404
 
 from ..models import Project, ProjectGallery
 from ..serializers import ProjectSerializer
 
 
-class AdminProjectViewSet(viewsets.ModelViewSet):
+class AdminProjectViewSet(AdminBaseViewSet):
     serializer_class = ProjectSerializer
-    permission_classes = [IsSecureAdmin]
     parser_classes = [JSONParser, FormParser, MultiPartParser]
-    authentication_classes = [CookieJWTAuthentication]
     lookup_field = "slug"  # default slug for detail URLs
 
     def get_object(self):
