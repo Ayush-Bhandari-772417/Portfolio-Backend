@@ -12,7 +12,7 @@ class ProjectGallerySerializer(BaseModelSerializer):
         fields = "__all__"
 
     def get_image_url(self, obj):
-        return self.get_image_url(obj, 'image')
+        return super().get_image_url(obj, 'image')
 
 
 # Main Project Serializer
@@ -26,7 +26,7 @@ class ProjectSerializer(BaseModelSerializer):
         read_only_fields = ("user",)
 
     def get_featured_image_url(self, obj):
-        return self.get_image_url(obj, 'featured_image')
+        return super().get_image_url(obj, 'featured_image')
     
 
 class ProjectListSerializer(serializers.ModelSerializer):
