@@ -47,6 +47,7 @@ urlpatterns = [
     # If you have a separate users app API, include it similarly
     path("api/public/", include("public_api.urls")),
     path("api/v1/public/", include("public_api.urls")),
+    path("api/seo/", include("seo.urls")),
 ]
 
 if settings.DEBUG:

@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "subscription",
     "users",
     "public_api",
+    "seo",
 ]
 
 AUTH_USER_MODEL = "users.User"

@@ -45,6 +45,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "featured_image",
             "featured_image_alt",
             "status",
+            "featured",
             "project_type",
             "started_date",
             "completed_date",

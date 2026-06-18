@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "read_file|write_file|edit_file|multi_edit_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/protect.py"
+          }
+        ]
+      }
+    ]
+  }
+}
