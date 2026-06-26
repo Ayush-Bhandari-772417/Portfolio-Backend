@@ -26,6 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =====================================================
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY', '')
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
