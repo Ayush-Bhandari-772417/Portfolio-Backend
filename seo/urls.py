@@ -27,15 +27,15 @@ urlpatterns = [
     path('admin/', include(admin_router.urls)),
 
     # Public endpoints (read-only, throttled)
-    path('public/dashboard/', public_views.dashboard_stats, name='seo-public-dashboard'),
-    path('public/keywords/', public_views.keyword_rankings, name='seo-public-keywords'),
-    path('public/gsc-queries/', public_views.gsc_queries, name='seo-public-gsc-queries'),
-    path('public/aeo-features/', public_views.aeo_features, name='seo-public-aeo-features'),
-    path('public/backlinks/', public_views.backlinks, name='seo-public-backlinks'),
-    path('public/crawl-stats/', public_views.crawl_stats, name='seo-public-crawl-stats'),
-    path('public/local-citations/', public_views.local_citations, name='seo-public-local-citations'),
-    path('public/schemas/', public_views.schema_list, name='seo-public-schemas'),
-    path('public/goals/', public_views.active_goals, name='seo-public-goals'),
-    path('public/track/', public_views.track_event, name='seo-public-track'),
+    path('public/seo/dashboard/', public_views.dashboard_stats, name='seo-public-dashboard'),
+    path('public/seo/keywords/', public_views.keyword_rankings, name='seo-public-keywords'),
+    path('public/seo/gsc-queries/', public_views.gsc_queries, name='seo-public-gsc-queries'),
+    path('public/seo/aeo-features/', public_views.aeo_features, name='seo-public-aeo-features'),
+    path('public/seo/backlinks/', public_views.backlinks, name='seo-public-backlinks'),
+    path('public/seo/crawl-stats/', public_views.crawl_stats, name='seo-public-crawl-stats'),
+    path('public/seo/local-citations/', public_views.local_citations, name='seo-public-local-citations'),
+    path('public/seo/schemas/', public_views.schema_list, name='seo-public-schemas'),
+    path('public/seo/goals/', public_views.active_goals, name='seo-public-goals'),
+    path('public/seo/track/', public_views.track_event, name='seo-public-track'),
 ]
 
