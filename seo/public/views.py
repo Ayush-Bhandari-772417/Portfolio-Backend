@@ -1,5 +1,6 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from django.db.models import Count, Avg, Sum, Q
@@ -32,6 +33,7 @@ class ConversionEventAnonThrottle(AnonRateThrottle):
 
 @api_view(['GET'])
 @throttle_classes([SEOStatsAnonThrottle])
+@permission_classes([AllowAny])
 def dashboard_stats(request):
     """
     Public endpoint for SEO dashboard data.
@@ -87,6 +89,7 @@ def dashboard_stats(request):
 
 @api_view(['GET'])
 @throttle_classes([SEOStatsAnonThrottle])
+@permission_classes([AllowAny])
 def keyword_rankings(request):
     """Public read-only keyword rankings"""
     keyword = request.query_params.get('keyword', '')
@@ -106,6 +109,7 @@ def keyword_rankings(request):
 
 @api_view(['GET'])
 @throttle_classes([SEOStatsAnonThrottle])
+@permission_classes([AllowAny])
 def gsc_queries(request):
     """Public read-only GSC query data"""
     q = request.query_params.get('q', '')
@@ -123,6 +127,7 @@ def gsc_queries(request):
 
 @api_view(['GET'])
 @throttle_classes([SEOStatsAnonThrottle])
+@permission_classes([AllowAny])
 def aeo_features(request):
     """Public read-only AEO features data"""
     days = int(request.query_params.get('days', 30))
@@ -160,6 +165,7 @@ def aeo_features(request):
 
 @api_view(['GET'])
 @throttle_classes([SEOStatsAnonThrottle])
+@permission_classes([AllowAny])
 def backlinks(request):
     """Public read-only backlinks"""
     target = request.query_params.get('target', '')
@@ -174,6 +180,7 @@ def backlinks(request):
 
 @api_view(['GET'])
 @throttle_classes([SEOStatsAnonThrottle])
+@permission_classes([AllowAny])
 def crawl_stats(request):
     """Public read-only crawl stats"""
     days = int(request.query_params.get('days', 30))
@@ -196,6 +203,7 @@ def crawl_stats(request):
 
 @api_view(['GET'])
 @throttle_classes([SEOStatsAnonThrottle])
+@permission_classes([AllowAny])
 def local_citations(request):
     """Public read-only local citations"""
     qs = LocalCitation.objects.order_by('-last_checked')
@@ -224,6 +232,7 @@ def local_citations(request):
 
 @api_view(['GET'])
 @throttle_classes([SEOStatsAnonThrottle])
+@permission_classes([AllowAny])
 def schema_list(request):
     """Public read-only schema markup list"""
     qs = SchemaMarkup.objects.order_by('page_path')
@@ -254,6 +263,7 @@ def schema_list(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def active_goals(request):
     """
     Returns active CRO goals for frontend tracking configuration.
@@ -268,6 +278,7 @@ def active_goals(request):
 
 @api_view(['POST'])
 @throttle_classes([ConversionEventAnonThrottle])
+@permission_classes([AllowAny])
 def track_event(request):
     """
     Receives CRO events from frontend.
