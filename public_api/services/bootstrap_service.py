@@ -48,5 +48,5 @@ class BootstrapService:
             "settings": Setting.objects.filter(is_public=True).order_by("type"),
             "seo": SEOPageSetting.objects.filter(is_public=True).order_by("page"),
             "sitemap": SitemapSetting.objects.filter(is_public=True).order_by("priority"),
-            "display": DisplaySetting.objects.filter(is_public=True).order_by("context"),
+            "display": DisplaySetting.objects.filter(is_public=True).order_by("location"),
         }
