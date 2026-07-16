@@ -4,5 +4,5 @@ from django.urls import path
 from .views.bootstrap import BootstrapView
 
 urlpatterns = [
-    path("bootstrap/", BootstrapView.as_view(), name="public-bootstrap"),
+    path("public/bootstrap/", BootstrapView.as_view(), name="public-bootstrap"),
 ]

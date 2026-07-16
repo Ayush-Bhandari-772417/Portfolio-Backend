@@ -40,9 +40,9 @@ class PublicSitemapSettingViewset(PublicBaseReadOnlyViewSet):
 class PublicDisplaySettingViewSet(PublicBaseReadOnlyViewSet):
     serializer_class = DisplaySettingSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["context"]
-    ordering_fields = ["context"]
-    ordering = ["context"]
+    search_fields = ["location"]
+    ordering_fields = ["location"]
+    ordering = ["location"]
 
     def get_queryset(self):
-        return DisplaySetting.objects.filter(is_public=True).order_by("context")
+        return DisplaySetting.objects.filter(is_public=True).order_by("location")

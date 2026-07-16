@@ -128,9 +128,11 @@ class Command(BaseCommand):
 
         results = self._fetch_aeo_data(keywords, location, device)
 
-        if not results:
+        if results is None:
             self.stdout.write(self.style.WARNING('No AEO API available. Using demo data.'))
             results = self._generate_demo_aeo(keywords, location, device)
+        elif len(results) == 0:
+            self.stdout.write('No SERP features found for these keywords (real result, not an error).')
 
         self.stdout.write(f'  Found {len(results)} AEO results')
 
@@ -261,10 +263,128 @@ class Command(BaseCommand):
             return None
 
     def _fetch_aeo_data(self, keywords, location, device):
-        """Fetch AEO/SERP feature data"""
-        # AEO data typically comes from the same SERP API
-        # This is a simplified implementation
-        return None  # Will fall back to demo data
+        """Fetch AEO/SERP feature data from SerpApi"""
+        try:
+            import requests
+            api_key = os.getenv('SERPAPI_KEY')
+
+            if not api_key:
+                return None
+
+            results = []
+
+            for keyword in keywords:
+                params = {
+                    'engine': 'google',
+                    'q': keyword,
+                    'location': location,
+                    'device': device,
+                    'api_key': api_key,
+                    'num': 10,
+                }
+
+                response = requests.get('https://serpapi.com/search', params=params, timeout=60)
+
+                if response.status_code != 200:
+                    self.stdout.write(self.style.WARNING(
+                        f'SerpApi AEO request failed for "{keyword}": {response.status_code}'
+                    ))
+                    continue
+
+                data = response.json()
+
+                # Featured snippet
+                answer_box = data.get('answer_box')
+                if answer_box:
+                    results.append({
+                        'keyword': keyword,
+                        'serp_feature': 'featured_snippet',
+                        'url': answer_box.get('link', ''),
+                        'is_present': True,
+                        'position': 0,
+                        'feature_text': (answer_box.get('snippet') or answer_box.get('answer') or '')[:500],
+                    })
+
+                # People Also Ask
+                for i, q in enumerate(data.get('related_questions', [])):
+                    results.append({
+                        'keyword': keyword,
+                        'serp_feature': 'people_also_ask',
+                        'url': q.get('link', ''),
+                        'is_present': True,
+                        'position': i + 1,
+                        'feature_text': (q.get('question') or '')[:500],
+                    })
+
+                # Knowledge panel
+                kg = data.get('knowledge_graph')
+                if kg:
+                    kg_url = kg.get('website', '')
+                    if not kg_url and isinstance(kg.get('source'), dict):
+                        kg_url = kg['source'].get('link', '')
+                    results.append({
+                        'keyword': keyword,
+                        'serp_feature': 'knowledge_panel',
+                        'url': kg_url,
+                        'is_present': True,
+                        'position': 0,
+                        'feature_text': (kg.get('description') or '')[:500],
+                    })
+
+                # AI overview — NEEDS VERIFICATION against your actual response
+                ai_overview = data.get('ai_overview')
+                if ai_overview:
+                    overview_text = ai_overview.get('text') or str(ai_overview)
+                    results.append({
+                        'keyword': keyword,
+                        'serp_feature': 'ai_overview',
+                        'url': '',
+                        'is_present': True,
+                        'position': 0,
+                        'feature_text': overview_text[:500],
+                    })
+
+                # Video carousel
+                videos = data.get('inline_videos', [])
+                for i, v in enumerate(videos[:5]):
+                    results.append({
+                        'keyword': keyword,
+                        'serp_feature': 'video_carousel',
+                        'url': v.get('link', ''),
+                        'is_present': True,
+                        'position': i + 1,
+                        'feature_text': (v.get('title') or '')[:500],
+                    })
+
+                # Image pack
+                images = data.get('inline_images', [])
+                if images:
+                    results.append({
+                        'keyword': keyword,
+                        'serp_feature': 'image_pack',
+                        'url': images[0].get('original', images[0].get('link', '')),
+                        'is_present': True,
+                        'position': 0,
+                        'feature_text': f'{len(images)} images in pack',
+                    })
+
+                # Top stories
+                for i, s in enumerate(data.get('top_stories', [])[:5]):
+                    results.append({
+                        'keyword': keyword,
+                        'serp_feature': 'top_stories',
+                        'url': s.get('link', ''),
+                        'is_present': True,
+                        'position': i + 1,
+                        'feature_text': (s.get('title') or '')[:500],
+                    })
+
+            return results
+        except ImportError:
+            return None
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f'SerpApi AEO error: {e}'))
+            return None
 
     def _generate_demo_rankings(self, keywords, location, device):
         import random

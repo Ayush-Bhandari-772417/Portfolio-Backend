@@ -7,11 +7,12 @@ from django.db.models import Count, Avg, Sum, Q
 from django.utils import timezone
 from datetime import timedelta
 import json
+import os
 
 from seo.models import (
     KeywordRanking, AEOHit, GSCQueryData, GSCCoverage,
     GSCCrawlStats, LocalCitation, SchemaMarkup, Backlink,
-    ConversionGoal, ConversionEvent,
+    ConversionGoal, ConversionEvent, AICrawlerVisit,
 )
 from seo.serializers import (
     PublicSEODashboardSerializer,
@@ -295,6 +296,8 @@ def track_event(request):
     """
     goal_id = request.data.get('goal_id')
     session_id = request.data.get('session_id')
+    event_type = request.data.get('event_type')
+
 
     if not goal_id or not session_id:
         return Response(
@@ -302,16 +305,23 @@ def track_event(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    try:
-        goal = ConversionGoal.objects.get(pk=goal_id, is_active=True)
-    except ConversionGoal.DoesNotExist:
+    goal = None
+    if goal_id:
+        try:
+            goal = ConversionGoal.objects.get(pk=goal_id, is_active=True)
+        except ConversionGoal.DoesNotExist:
+            goal = None
+
+    if not event_type:
         return Response(
-            {'error': 'Goal not found or inactive'},
-            status=status.HTTP_404_NOT_FOUND
+            {'error': 'event_type is required when no goal_id is provided'},
+            status=status.HTTP_400_BAD_REQUEST
         )
 
     event = ConversionEvent.objects.create(
         goal=goal,
+        event_type=event_type,
+
         session_id=session_id,
         url=request.data.get('url', ''),
         referrer=request.data.get('referrer', ''),
@@ -334,3 +344,64 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+
+@api_view(["POST"])
+def log_ai_crawler(request):
+    """
+    Receives AI crawler visits detected by the Next.js middleware.
+
+    This endpoint is intended only for the official frontend.
+    """
+
+    allowed_hosts = {
+        "www.bhandariayush.com.np",
+        "bhandariayush.com.np",
+        "localhost",
+        "127.0.0.1",
+    }
+
+    origin = request.META.get("HTTP_ORIGIN", "")
+    referer = request.META.get("HTTP_REFERER", "")
+
+    origin_allowed = any(host in origin for host in allowed_hosts)
+    referer_allowed = any(host in referer for host in allowed_hosts)
+
+    # Reject requests from unexpected origins.
+    # Requests without Origin/Referer (e.g. server-to-server) are still allowed.
+    if (origin or referer) and not (origin_allowed or referer_allowed):
+        return Response(
+            {"detail": "Forbidden"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    valid_crawlers = {
+        choice[0]
+        for choice in AICrawlerVisit.AI_CRAWLERS
+    }
+
+    crawler = request.data.get("crawler", "other_ai")
+
+    if crawler not in valid_crawlers:
+        crawler = "other_ai"
+
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
+    if forwarded:
+        ip = forwarded.split(",")[0].strip()
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+
+    AICrawlerVisit.objects.create(
+        crawler=crawler,
+        user_agent_raw=request.data.get("user_agent", "")[:500],
+        path=request.data.get("path", "")[:500],
+        host=request.data.get("host", "")[:255],
+        canonical=bool(request.data.get("canonical", True)),
+        redirected=bool(request.data.get("redirected", False)),
+        redirect_reason=request.data.get("redirect_reason") or None,
+        ip_address=ip,
+    )
+
+    return Response(
+        {"status": "logged"},
+        status=status.HTTP_201_CREATED,
+    )

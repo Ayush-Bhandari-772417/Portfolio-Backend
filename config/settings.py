@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "users",
     "public_api",
     "seo",
+    "django_extensions",
 ]
 
 AUTH_USER_MODEL = "users.User"
@@ -88,6 +89,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'seo.middleware.AICrawlerTrackingMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"

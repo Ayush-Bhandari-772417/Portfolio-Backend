@@ -3,6 +3,9 @@ from django.utils import timezone
 from datetime import timedelta, date
 import json
 import os
+from django.utils.dateparse import parse_datetime
+import time
+import xml.etree.ElementTree as ET
 
 from seo.models import GSCQueryData, GSCCoverage, GSCCrawlStats
 
@@ -70,6 +73,142 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(f'Credentials file not found: {credentials_path}. Using demo data.'))
             return None
 
+    def get_gsc_inspection_service(self):
+        """
+        Initialize the newer Search Console v1 API service.
+        urlInspection lives here, NOT in the legacy webmasters v3 API
+        that get_gsc_service() builds for searchanalytics.
+        """
+        try:
+            from google.oauth2 import service_account
+            from googleapiclient.discovery import build
+
+            credentials_path = os.getenv('GSC_CREDENTIALS_PATH', 'gsc-credentials.json')
+            credentials = service_account.Credentials.from_service_account_file(
+                credentials_path,
+                scopes=['https://www.googleapis.com/auth/webmasters.readonly']
+        )
+            return build('searchconsole', 'v1', credentials=credentials, cache_discovery=False)
+        except ImportError:
+            return None
+        except FileNotFoundError:
+            return None
+
+    def get_all_sitemap_urls(self, site_url):
+        """
+        Pull the complete list of URLs from the sitemap (no cap here —
+        capping happens later, based on what's least recently checked).
+        """
+        import requests
+
+        sitemap_override = os.getenv('GSC_SITEMAP_URL')
+
+        if sitemap_override:
+            sitemap_url = sitemap_override
+        else:
+            if site_url.startswith('sc-domain:'):
+                self.stdout.write(self.style.WARNING(
+                    'GSC_SITE_URL is a domain property (sc-domain:...). '
+                    'Set GSC_SITEMAP_URL explicitly since a sitemap location '
+                    'cannot be inferred automatically.'
+                ))
+                return []
+            sitemap_url = site_url.rstrip('/') + '/sitemap.xml'
+
+        urls = []
+        to_fetch = [sitemap_url]
+        seen_sitemaps = set()
+
+        while to_fetch:
+            current = to_fetch.pop(0)
+            if current in seen_sitemaps:
+                continue
+            seen_sitemaps.add(current)
+
+            try:
+                response = requests.get(current, timeout=10)
+                response.raise_for_status()
+            except requests.RequestException as e:
+                self.stdout.write(self.style.WARNING(f'  Could not fetch sitemap {current}: {e}'))
+                continue
+
+            try:
+                root = ET.fromstring(response.content)
+            except ET.ParseError as e:
+                self.stdout.write(self.style.WARNING(f'  Could not parse sitemap {current}: {e}'))
+                continue
+
+            ns = ''
+            if root.tag.startswith('{'):
+                ns = root.tag.split('}')[0] + '}'
+
+            if root.tag == f'{ns}sitemapindex':
+                for sitemap_el in root.findall(f'{ns}sitemap'):
+                    loc_el = sitemap_el.find(f'{ns}loc')
+                    if loc_el is not None and loc_el.text:
+                        to_fetch.append(loc_el.text.strip())
+            else:
+                for url_el in root.findall(f'{ns}url'):
+                    loc_el = url_el.find(f'{ns}loc')
+                    if loc_el is not None and loc_el.text:
+                        urls.append(loc_el.text.strip())
+
+        return urls
+
+    def select_urls_for_this_run(self, all_urls, max_urls):
+        """
+        Prioritize URLs never checked, then URLs checked longest ago,
+        using the existing updated_at field (auto_now=True).
+        """
+        existing = {
+            c.url: c.updated_at
+            for c in GSCCoverage.objects.filter(url__in=all_urls).only('url', 'updated_at')
+        }
+
+        never_checked = [u for u in all_urls if u not in existing]
+        previously_checked = [u for u in all_urls if u in existing]
+        previously_checked.sort(key=lambda u: existing[u])
+
+        ordered = never_checked + previously_checked
+        return ordered[:max_urls]
+
+    def map_inspection_to_coverage_fields(self, index_status):
+        """
+        Translate Google's URL Inspection response into this project's
+        GSCCoverage STATUS_CHOICES / ISSUE_TYPES slugs.
+        """
+        verdict = index_status.get('verdict', 'VERDICT_UNSPECIFIED')
+        coverage_state = index_status.get('coverageState', '') or ''
+        coverage_state_lower = coverage_state.lower()
+
+        if 'soft 404' in coverage_state_lower:
+            issue_type = 'soft_404'
+        elif '404' in coverage_state_lower or 'not found' in coverage_state_lower:
+            issue_type = 'not_found'
+        elif 'server error' in coverage_state_lower or '5xx' in coverage_state_lower:
+            issue_type = 'server_error'
+        elif 'redirect' in coverage_state_lower:
+            issue_type = 'redirect_error'
+        elif 'robots' in coverage_state_lower:
+            issue_type = 'blocked_robots'
+        elif 'duplicate' in coverage_state_lower:
+            issue_type = 'duplicate'
+        elif 'anomaly' in coverage_state_lower:
+            issue_type = 'crawl_anomaly'
+        else:
+            issue_type = 'no_issue'
+
+        if verdict == 'PASS':
+            status = 'indexed'
+        elif verdict == 'FAIL':
+            status = 'error'
+        elif verdict == 'NEUTRAL':
+            status = 'excluded'
+        else:
+            status = 'submitted'
+
+        return status, issue_type
+    
     def sync_query_data(self, site_url, days, dry_run):
         """Sync search query data"""
         end_date = timezone.now().date()
@@ -127,22 +266,71 @@ class Command(BaseCommand):
         self.stdout.write(f'  Query data: {created} created, {updated} updated')
 
     def sync_coverage(self, site_url, dry_run):
-        """Sync coverage/indexing status"""
-        service = self.get_gsc_service()
+        """Sync coverage/indexing status via per-URL Inspection API looping"""
+        service = self.get_gsc_inspection_service()
 
-        if service:
+        if not service:
+            self.stdout.write(self.style.WARNING('Inspection service unavailable. Using demo data.'))
+            rows = self._generate_demo_coverage()
+            self._save_coverage_rows(rows, dry_run)
+            return
+
+        max_urls = int(os.getenv('GSC_MAX_URLS_PER_RUN', 50))
+        request_delay = float(os.getenv('GSC_INSPECTION_DELAY_SECONDS', 0.5))
+
+        all_urls = self.get_all_sitemap_urls(site_url)
+
+        if not all_urls:
+            self.stdout.write(self.style.WARNING('No URLs found to inspect. Using demo data.'))
+            rows = self._generate_demo_coverage()
+            self._save_coverage_rows(rows, dry_run)
+            return
+
+        urls = self.select_urls_for_this_run(all_urls, max_urls)
+
+        self.stdout.write(
+            f'  Inspecting {len(urls)} of {len(all_urls)} total sitemap URLs '
+            f'(rotating by least-recently-checked)...'
+        )
+
+        rows = []
+        for i, url in enumerate(urls):
             try:
                 response = service.urlInspection().index().inspect(
-                    body={'inspectionUrl': site_url, 'siteUrl': site_url}
+                    body={'inspectionUrl': url, 'siteUrl': site_url}
                 ).execute()
-                # Note: Real implementation would batch inspect URLs from sitemap
-                rows = []
+
+                result = response.get('inspectionResult', {})
+                index_status = result.get('indexStatusResult', {})
+
+                status, issue_type = self.map_inspection_to_coverage_fields(index_status)
+
+                last_crawled_raw = index_status.get('lastCrawlTime')
+                last_crawled = parse_datetime(last_crawled_raw) if last_crawled_raw else None
+
+                rows.append({
+                    'url': url,
+                    'status': status,
+                    'issue_type': issue_type,
+                    'last_crawled': last_crawled,
+                    'page_fetch_state': index_status.get('pageFetchState', '')[:50],
+                    'indexing_state': index_status.get('indexingState', '')[:50],
+                })
+
             except Exception as e:
-                self.stdout.write(self.style.WARNING(f'Coverage API error: {e}. Using demo data.'))
-                rows = self._generate_demo_coverage()
-        else:
+                self.stdout.write(self.style.WARNING(f'  Inspection failed for {url}: {e}'))
+
+            if i < len(urls) - 1:
+                time.sleep(request_delay)
+
+        if not rows:
+            self.stdout.write(self.style.WARNING('  All inspections failed. Using demo data.'))
             rows = self._generate_demo_coverage()
 
+        self._save_coverage_rows(rows, dry_run)
+
+    def _save_coverage_rows(self, rows, dry_run):
+        """Shared save logic for real or demo coverage rows"""
         self.stdout.write(f'  Found {len(rows)} coverage rows')
 
         if dry_run:

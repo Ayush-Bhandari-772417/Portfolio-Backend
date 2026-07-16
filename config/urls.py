@@ -38,16 +38,14 @@ urlpatterns = [
     path('api/', include('hires.urls')),
     path('api/', include('profiles.urls')),
     path('api/', include('projects.urls')),
+    path("api/", include("public_api.urls")),
     path('api/', include('qualifications.urls')),
+    path("api/", include("seo.urls")),
     path('api/', include('services.urls')),
     path('api/', include('settings.urls')),
     path('api/', include('skills.urls')),
     path('api/', include('socialmedia.urls')),
     path('api/', include('subscription.urls')),
-    # If you have a separate users app API, include it similarly
-    path("api/public/", include("public_api.urls")),
-    path("api/v1/public/", include("public_api.urls")),
-    path("api/", include("seo.urls")),
 ]
 
 if settings.DEBUG:

@@ -21,5 +21,5 @@ class SitemapSettingAdmin(admin.ModelAdmin):
 
 @admin.register(DisplaySetting)
 class DisplaySettingAdmin(admin.ModelAdmin):
-    list_display = ("context",)
-    search_fields = ("context",)
+    list_display = ("location",)
+    search_fields = ("location",)

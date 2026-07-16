@@ -47,10 +47,10 @@ class AdminDisplaySettingViewSet(AdminBaseViewSet):
     serializer_class = DisplaySettingSerializer
 
     def get_queryset(self):
-        qs = DisplaySetting.objects.all().order_by("context")
+        qs = DisplaySetting.objects.all().order_by("location")
         return qs
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["context"]
-    ordering_fields = ["context"]
-    ordering = ["context"]
+    search_fields = ["location"]
+    ordering_fields = ["location"]
+    ordering = ["location"]

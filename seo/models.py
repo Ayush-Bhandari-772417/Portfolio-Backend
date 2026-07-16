@@ -297,8 +297,18 @@ class ConversionGoal(models.Model):
 
 
 class ConversionEvent(models.Model):
-    """CRO Events - populated by frontend events via API"""
-    goal = models.ForeignKey(ConversionGoal, on_delete=models.CASCADE, related_name='events')
+    """CRO Events - populated by frontend events via API.
+
+    Current frontend sends `event_type` (pageview/click/submit/etc).
+    We store it for analytics today, and keep `goal` nullable so you can
+    fully switch to goal-based tracking later without breaking existing data.
+    """
+
+    # Optional linkage for future goal-based approach
+    goal = models.ForeignKey(ConversionGoal, on_delete=models.CASCADE, related_name='events', null=True, blank=True)
+
+    # Required tracking contract for current implementation
+    event_type = models.CharField(max_length=30, db_index=True)
     session_id = models.CharField(max_length=255, db_index=True)
     url = models.URLField()
     referrer = models.URLField(blank=True)
@@ -316,5 +326,80 @@ class ConversionEvent(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.goal.name} - {self.timestamp}"
+        goal_part = self.goal.name if self.goal_id else 'no-goal'
+        return f"{goal_part} - {self.event_type} - {self.timestamp}"
 
+
+class AICrawlerVisit(models.Model):
+    """Passive log of AI crawler/bot visits to site pages, detected via User-Agent"""
+    AI_CRAWLERS = [
+        # OpenAI
+        ("gptbot", "OpenAI GPTBot"),
+        ("chatgpt_user", "ChatGPT-User"),
+        
+        # Anthropic
+        ("claudebot", "Anthropic ClaudeBot"),
+        ("claude_user", "Claude-User"),
+        
+        # Google
+        ("googlebot", "Googlebot"),
+        ("google_extended", "Google-Extended"),
+        ("googleother", "GoogleOther"),
+        
+        # Microsoft
+        ("bingbot", "Bingbot"),
+        
+        # Perplexity
+        ("perplexitybot", "PerplexityBot"),
+        ("perplexity_user", "Perplexity-User"),
+        
+        # Amazon
+        ("amazonbot", "Amazonbot"),
+        
+        # Apple
+        ("applebot", "Applebot"),
+        
+        # ByteDance
+        ("bytespider", "ByteDance Bytespider"),
+        
+        # Common AI/Search crawlers
+        ("ccbot", "Common Crawl CCBot"),
+        ("yandexbot", "YandexBot"),
+        ("duckassistbot", "DuckAssistBot"),
+        ("facebookbot", "Meta ExternalHit"),
+        ("oai_searchbot", "OpenAI SearchBot"),
+        
+        # Unknown AI crawler
+        ("other_ai", "Other AI Crawler"),
+    ]
+
+    crawler = models.CharField(max_length=30, choices=AI_CRAWLERS, db_index=True)
+    user_agent_raw = models.CharField(max_length=500)
+    path = models.CharField(max_length=500)
+    host = models.CharField(max_length=255)
+    canonical = models.BooleanField(default=True)
+    redirected = models.BooleanField(default=False)
+    redirect_reason = models.CharField(
+        max_length=40,
+        blank=True,
+        null = True,
+        choices=[
+            ("deployment_host", "Vercel deployment host"),
+            ("custom_redirect", "Application redirect"),
+            ("other", "Other"),
+        ],
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['crawler', '-timestamp']),
+            models.Index(fields=['path', '-timestamp']),
+            models.Index(fields=['host', '-timestamp']),
+            models.Index(fields=['canonical', '-timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.crawler} → {self.path} @ {self.timestamp}"

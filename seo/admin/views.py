@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -9,7 +9,7 @@ from datetime import timedelta
 from seo.models import (
     KeywordRanking, AEOHit, GSCQueryData, GSCCoverage,
     GSCCrawlStats, LocalCitation, SchemaMarkup, Backlink,
-    ConversionGoal, ConversionEvent,
+    ConversionGoal, ConversionEvent, AICrawlerVisit,
 )
 from seo.serializers import (
     KeywordRankingSerializer, KeywordRankingStatsSerializer,
@@ -19,7 +19,7 @@ from seo.serializers import (
     LocalCitationSerializer, SchemaMarkupSerializer,
     BacklinkSerializer, BacklinkStatsSerializer,
     ConversionGoalSerializer, ConversionGoalCreateUpdateSerializer,
-    ConversionEventSerializer,
+    ConversionEventSerializer, AICrawlerVisitSerializer,
 )
 
 
@@ -252,3 +252,19 @@ class ConversionEventViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(goal_id=goal)
         return qs
 
+
+class AICrawlerVisitViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AICrawlerVisitSerializer
+    pagination_class = StandardPagination
+
+    queryset = (
+        AICrawlerVisit.objects.only(
+            "id", "crawler", "host", "path", "canonical", "redirected", "redirect_reason",
+            "timestamp", "ip_address", "user_agent_raw",
+        ).order_by("-timestamp")
+    )
+
+    filterset_fields = ("crawler", "host", "canonical", "redirected",)
+    search_fields = ("path","host","user_agent_raw",)
+    ordering_fields = ("timestamp", "crawler", "host", "path",)
+    ordering = ("-timestamp",)

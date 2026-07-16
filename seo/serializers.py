@@ -2,7 +2,7 @@ from rest_framework import serializers
 from seo.models import (
     KeywordRanking, AEOHit, GSCQueryData, GSCCoverage,
     GSCCrawlStats, LocalCitation, SchemaMarkup, Backlink,
-    ConversionGoal, ConversionEvent,
+    ConversionGoal, ConversionEvent, AICrawlerVisit
 )
 
 
@@ -109,6 +109,13 @@ class ConversionGoalCreateUpdateSerializer(serializers.ModelSerializer):
 class ConversionEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConversionEvent
+        fields = '__all__'
+        read_only_fields = ('timestamp',)
+
+
+class AICrawlerVisitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AICrawlerVisit
         fields = '__all__'
         read_only_fields = ('timestamp',)
 
