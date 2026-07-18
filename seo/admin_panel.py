@@ -82,9 +82,9 @@ class ConversionGoalAdmin(admin.ModelAdmin):
 
 @admin.register(ConversionEvent)
 class ConversionEventAdmin(admin.ModelAdmin):
-    list_display = ('goal', 'session_id', 'url', 'value', 'timestamp')
+    list_display = ('goal', 'session_id', 'path', 'numeric_value', 'timestamp')
     list_filter = ('goal', 'timestamp')
-    search_fields = ('session_id', 'url', 'referrer')
+    search_fields = ('session_id', 'path', 'referrer')
     ordering = ('-timestamp',)
     readonly_fields = ('timestamp',)
 

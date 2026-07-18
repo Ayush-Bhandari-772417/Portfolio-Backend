@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from .choices import EventType
 
 
 class KeywordRanking(models.Model):
@@ -305,30 +306,38 @@ class ConversionEvent(models.Model):
     """
 
     # Optional linkage for future goal-based approach
-    goal = models.ForeignKey(ConversionGoal, on_delete=models.CASCADE, related_name='events', null=True, blank=True)
+    goal = models.ForeignKey(ConversionGoal, on_delete=models.SET_NULL, related_name='events', null=True, blank=True)
 
     # Required tracking contract for current implementation
-    event_type = models.CharField(max_length=30, db_index=True)
+    event_type = models.CharField(max_length=30, choices=EventType.choices, db_index=True, help_text="High-level category of the tracked event.")
+    event_name = models.CharField(max_length=100, blank=True, db_index=True,)
+    numeric_value = models.FloatField(null=True, blank=True,)
     session_id = models.CharField(max_length=255, db_index=True)
-    url = models.URLField()
+    path = models.CharField(max_length=500, db_index=True)
     referrer = models.URLField(blank=True)
-    value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     metadata = models.JSONField(default=dict, blank=True)
     user_agent = models.TextField(blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    is_bot = models.BooleanField(default=False, db_index=True,)
 
     class Meta:
         ordering = ['-timestamp']
         indexes = [
-            models.Index(fields=['goal', '-timestamp']),
-            models.Index(fields=['session_id', '-timestamp']),
+            models.Index(fields=["goal", "-timestamp"]),
+            models.Index(fields=["session_id", "-timestamp"]),
+            models.Index(fields=["event_type", "-timestamp"]),
+            models.Index(fields=["path", "-timestamp"]),
         ]
 
     def __str__(self):
-        goal_part = self.goal.name if self.goal_id else 'no-goal'
-        return f"{goal_part} - {self.event_type} - {self.timestamp}"
-
+        goal = self.goal.name if self.goal else "No Goal"
+        return (
+            f"{self.event_type}"
+            f" ({self.event_name or '-'}) "
+            f"[{goal}] "
+            f"{self.path}"
+        )
 
 class AICrawlerVisit(models.Model):
     """Passive log of AI crawler/bot visits to site pages, detected via User-Agent"""

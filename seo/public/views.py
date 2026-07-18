@@ -9,6 +9,7 @@ from datetime import timedelta
 import json
 import os
 
+from seo.choices import EventType
 from seo.models import (
     KeywordRanking, AEOHit, GSCQueryData, GSCCoverage,
     GSCCrawlStats, LocalCitation, SchemaMarkup, Backlink,
@@ -277,62 +278,117 @@ def active_goals(request):
     return Response(list(goals))
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @throttle_classes([ConversionEventAnonThrottle])
 @permission_classes([AllowAny])
 def track_event(request):
     """
-    Receives CRO events from frontend.
+    Receives analytics/CRO events from the frontend.
+
     Expected payload:
     {
-        "goal_id": 1,
-        "session_id": "abc123",
-        "url": "https://...",
-        "referrer": "https://...",
-        "value": 0.0,
-        "metadata": {},
-        "user_agent": "...",
+        "goal_id": 1,                       # optional
+        "event_type": "click",             # required
+        "event_name": "hire_me_button",    # optional
+        "numeric_value": 90,               # optional
+        "session_id": "abc123",            # required
+        "path": "/projects/my-project",    # required
+        "referrer": "https://google.com/", # optional
+        "metadata": {},                    # optional
+        "user_agent": "Mozilla/5.0..."     # optional
     }
     """
-    goal_id = request.data.get('goal_id')
-    session_id = request.data.get('session_id')
-    event_type = request.data.get('event_type')
 
+    goal_id = request.data.get("goal_id")
+    event_type = request.data.get("event_type")
+    event_name = request.data.get("event_name", "")
+    numeric_value = request.data.get("numeric_value")
+    session_id = request.data.get("session_id")
+    path = request.data.get("path")
+    referrer = request.data.get("referrer", "")
+    metadata = request.data.get("metadata", {})
+    user_agent = request.data.get("user_agent", "")
 
-    if not goal_id or not session_id:
+    # ------------------------
+    # Required field validation
+    # ------------------------
+
+    if not session_id:
         return Response(
-            {'error': 'goal_id and session_id are required'},
-            status=status.HTTP_400_BAD_REQUEST
+            {"error": "session_id is required"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
+
+    if not event_type:
+        return Response(
+            {"error": "event_type is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not path:
+        return Response(
+            {"error": "path is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # ------------------------
+    # Validate event_type
+    # ------------------------
+
+    valid_event_types = {choice[0] for choice in EventType.choices}
+
+    if event_type not in valid_event_types:
+        return Response(
+            {
+                "error": "Invalid event_type.",
+                "allowed": list(valid_event_types),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # ------------------------
+    # Optional Goal lookup
+    # ------------------------
 
     goal = None
     if goal_id:
         try:
-            goal = ConversionGoal.objects.get(pk=goal_id, is_active=True)
+            goal = ConversionGoal.objects.get(
+                pk=goal_id,
+                is_active=True,
+            )
         except ConversionGoal.DoesNotExist:
-            goal = None
+            return Response(
+                {"error": "Invalid goal_id."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-    if not event_type:
-        return Response(
-            {'error': 'event_type is required when no goal_id is provided'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    # ------------------------
+    # Create event
+    # ------------------------
 
     event = ConversionEvent.objects.create(
         goal=goal,
         event_type=event_type,
-
+        event_name=event_name,
+        numeric_value=numeric_value,
         session_id=session_id,
-        url=request.data.get('url', ''),
-        referrer=request.data.get('referrer', ''),
-        value=request.data.get('value'),
-        metadata=request.data.get('metadata', {}),
-        user_agent=request.data.get('user_agent', ''),
+        path=path,
+        referrer=referrer,
+        metadata=metadata,
+        user_agent=user_agent,
         ip_address=get_client_ip(request),
+
+        # Replace this later with real bot detection.
+        is_bot=False,
     )
 
     serializer = ConversionEventSerializer(event)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(
+        serializer.data,
+        status=status.HTTP_201_CREATED,
+    )
 
 
 def get_client_ip(request):
