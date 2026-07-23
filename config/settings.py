@@ -170,6 +170,7 @@ AWS_S3_ADDRESSING_STYLE = "path"
 # =====================================================
 
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CRO_ALLOWED_HOSTS = os.getenv("CRO_ALLOWED_HOSTS", "").split(",")
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",

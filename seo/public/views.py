@@ -283,21 +283,15 @@ def active_goals(request):
 @permission_classes([AllowAny])
 def track_event(request):
     """
-    Receives analytics/CRO events from the frontend.
+    Receives analytics/CRO events from the production frontend.
 
-    Expected payload:
-    {
-        "goal_id": 1,                       # optional
-        "event_type": "click",             # required
-        "event_name": "hire_me_button",    # optional
-        "numeric_value": 90,               # optional
-        "session_id": "abc123",            # required
-        "path": "/projects/my-project",    # required
-        "referrer": "https://google.com/", # optional
-        "metadata": {},                    # optional
-        "user_agent": "Mozilla/5.0..."     # optional
-    }
+    Tracking is accepted only when the frontend reports an approved
+    production hostname.
     """
+
+    # ------------------------
+    # Read payload
+    # ------------------------
 
     goal_id = request.data.get("goal_id")
     event_type = request.data.get("event_type")
@@ -305,9 +299,43 @@ def track_event(request):
     numeric_value = request.data.get("numeric_value")
     session_id = request.data.get("session_id")
     path = request.data.get("path")
+    hostname = request.data.get("hostname", "")
     referrer = request.data.get("referrer", "")
     metadata = request.data.get("metadata", {})
     user_agent = request.data.get("user_agent", "")
+
+    # ------------------------
+    # Validate frontend host
+    # ------------------------
+
+    allowed_hosts = {
+        "www.bhandariayush.com.np",
+        "bhandariayush.com.np",
+    }
+
+    hostname = hostname.lower().strip()
+
+    if hostname not in allowed_hosts:
+        return Response(
+            {
+                "error": "Tracking is not allowed from this hostname."
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    
+    origin = request.headers.get("Origin")
+    allowed_origins = {
+        "https://www.bhandariayush.com.np",
+        "https://bhandariayush.com.np",
+    }
+
+    origin = request.headers.get("Origin")
+
+    if origin and origin not in allowed_origins:
+        return Response(
+            {"error": "Invalid request origin."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     # ------------------------
     # Required field validation
@@ -332,10 +360,13 @@ def track_event(request):
         )
 
     # ------------------------
-    # Validate event_type
+    # Validate event type
     # ------------------------
 
-    valid_event_types = {choice[0] for choice in EventType.choices}
+    valid_event_types = {
+        choice[0]
+        for choice in EventType.choices
+    }
 
     if event_type not in valid_event_types:
         return Response(
@@ -347,7 +378,7 @@ def track_event(request):
         )
 
     # ------------------------
-    # Optional Goal lookup
+    # Optional goal lookup
     # ------------------------
 
     goal = None
@@ -378,8 +409,6 @@ def track_event(request):
         metadata=metadata,
         user_agent=user_agent,
         ip_address=get_client_ip(request),
-
-        # Replace this later with real bot detection.
         is_bot=False,
     )
 
